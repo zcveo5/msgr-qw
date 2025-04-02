@@ -27,6 +27,17 @@ class CorePlugin:
         pass
 
 
+class JsonObject:
+    def __init__(self, f: open):
+        self.f = f
+
+    def write(self, v):
+        self.f.write(v)
+
+    def read(self):
+        return self.f.read()
+
+
 def plugin_info():
     showinfo('BTAEML (BebraTech Application Engine Mod Loader)',
              "BTAEML (BebraTech Application Engine Mod Loader) coded by BebraTech Inc. (BTAE authors).\n"
