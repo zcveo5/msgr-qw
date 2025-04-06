@@ -3,6 +3,12 @@ BebraTech Inc.*
 open-sourse python messenger, based on tkinter and python.
 to use, you need to run server.
 
+requirements:
+python 3.8 or above
+windows 7 or above
+tkinter support
+socket support
+
 q/a
 
 how to update, if i have only msgr.py and launcher 1.0.1 or above?
