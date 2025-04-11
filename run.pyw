@@ -47,13 +47,9 @@ except (KeyError, TypeError) as nc_load_ex:
 
 # reinitializing loader win
 loader.destroy()
-loader = Tk()
-loader.resizable(False, False)
 
 # check LL_Update in RUNT_ACTION
 if base_conf['RUNT_ACTION'] == 'LL_Update':
-    Label(text='Update in progress...').pack()
-    loader.update()
     pb = data.btaeui.ProgressBar(Label())
     pb.i().pack()
     with open('./msgr.py', 'r') as fl:
@@ -77,8 +73,7 @@ if base_conf['RUNT_ACTION'] == 'LL_Update':
     else:
         print('[loader][error][update] failed to backup code')
     plugins.btac.auth.disconnect()
-
-
+# checking LL_F_Update in RUNT_ACTION
 if base_conf['RUNT_ACTION'] == 'LL_F_Update':
     print('[loader] updating from file')
     try:
@@ -97,7 +92,7 @@ if base_conf['RUNT_ACTION'] == 'LL_F_Update':
     except FileNotFoundError:
         print('[loader][error] cant find update file. must be in main directory (near with msgr.py) and with name msgr_upd.py')
 
-
+# VerSelect argv
 if 'VerSelect' in sys.argv:
     def ver_sel(event):
         global vers
@@ -113,7 +108,7 @@ if 'VerSelect' in sys.argv:
 
     win.mainloop()
 if not os.path.exists(f'{vers}'):
-    showerror('Error', f'Looks {vers} is not exists. Please change path using data_nc_wrk.py')
+    showerror('Error', f'{vers} is not exists')
     sys.exit()
 
 
@@ -121,7 +116,9 @@ for i in sys.argv:
     if 'BTAE!DebugAction' in i:
         exec(i.split('$=%')[1])
 json.dump(base_conf, JsonObject(open('./data/base_data.json', 'w')))
-loader.destroy()
+sys.argv.insert(1, vers.replace('/', '.').replace('.py', ''))
+
+# execute
 try:
     app = __import__(vers.replace('/', '.').replace('.py', ''), fromlist=['load_lbl', 'main'])
 except Exception as __ex:

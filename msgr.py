@@ -1,4 +1,6 @@
 import hashlib
+import json
+import os
 import tkinter
 import shutil
 import socket
@@ -212,6 +214,17 @@ class Settings:
                 action_butt['state'] = DISABLED
             else:
                 action_butt['state'] = NORMAL
+            plug_metas = {}
+            for _plug in os.listdir('./plugins'):
+                plug_metas.update({_plug: json.load(open(f'./plugins/{_plug}/metadata.json'))})
+            try:
+                if plug_metas[mods_select.get(mods_select.curselection())]['state'] == 'True':
+                    disable_butt['text'] = locale['repo_disable_text']
+                else:
+                    disable_butt['text'] = locale['repo_enable_text']
+                disable_butt['state'] = NORMAL
+            except KeyError:
+                disable_butt['state'] = DISABLED
         def install_mod():
             try:
                 mods_select.get(mods_select.curselection())
@@ -245,11 +258,21 @@ class Settings:
         def load_repo():
             mods_select.configure(listvariable=mods_var)
             action_butt.configure(text=locale['plg_install_butt'], command=install_mod)
+            disable_butt['state'] = DISABLED
         def load_installed():
             nonlocal installed_var
             installed_var = Variable(modl_win, os.listdir('./plugins'))
             mods_select.configure(listvariable=installed_var)
             action_butt.configure(text=locale['plg_remove_butt'], command=remove_mod)
+            disable_butt['state'] = NORMAL
+        def toggle_mod():
+            selected_meta = json.load(open(f'./plugins/{mods_select.get(mods_select.curselection())}/metadata.json', 'r'))
+            if selected_meta['state'] == 'True':
+                selected_meta['state'] = 'False'
+                json.dump(selected_meta, JsonObject(open(f'./plugins/{mods_select.get(mods_select.curselection())}/metadata.json', 'w')))
+            else:
+                selected_meta['state'] = 'True'
+                json.dump(selected_meta, JsonObject(open(f'./plugins/{mods_select.get(mods_select.curselection())}/metadata.json', 'w')))
 
         modl_win = Tk()
         modl_win.title('Plugins Repository')
@@ -267,11 +290,13 @@ class Settings:
         mods_select.bind('<<ListboxSelect>>', get_mod_info)
         action_butt = Button(modl_win, text='', command=install_mod, bg=default_bg, fg=default_fg, font=font_theme)
         action_butt.place(x=500, y=30)
+        disable_butt = Button(modl_win, text='', command=toggle_mod, bg=default_bg, fg=default_fg, font=font_theme)
+        disable_butt.place(x=580, y=30)
         state_pl = Label(modl_win, text='', bg=default_bg, fg=default_fg, font=font_theme)
-        state_pl.place(x=580, y=30)
+        state_pl.place(x=500, y=60)
         load_installed()
         name_mod = Label(modl_win, text='', bg=default_bg, fg=default_fg, font=font_theme, justify=LEFT)
-        name_mod.place(x=500, y=60)
+        name_mod.place(x=500, y=90)
         modl_win.geometry('900x500')
         modl_win.resizable(False, False)
 
@@ -283,19 +308,19 @@ class Debug:
             var.set(True)
             use_exec_hook = ttk.Button(debugger, text='!exh', command=lambda: self.exc_hook_execute(use_exec_hook, var))
             use_exec_hook.grid(column=0, row=0)
-            ttk.Button(debugger, text='ref locale', command=lambda: refresh_locale()).grid(column=1, row=1)
-            ttk.Button(debugger, text='bt data', command=lambda: _show('inf', f'DATA\n{bt_server_data}\nUSER\n{username}')).grid(column=1, row=2)
-            ttk.Button(debugger, text='re login', command=lambda: self.relog()).grid(column=1, row=3)
-            ttk.Button(debugger, text='reinit m win', command=reinit_window).grid(column=1, row=4)
-            ttk.Button(debugger, text='data.nc editor', command=self.data_nc_editor).grid(column=1, row=5)
-            ttk.Button(debugger, text='plugin create', command=self.plug_create).grid(column=1, row=6)
-
+            ttk.Button(debugger, text='data.nc editor', command=self.data_nc_editor).grid(column=1, row=1)
+            ttk.Button(debugger, text='plugin create', command=self.plug_create).grid(column=1, row=2)
             ttk.Button(debugger, text='EXECUTE', command=lambda: self.execute(self.cmd.get("0.0", "end"), var.get())).grid(column=1, row=99)
             ttk.Button(debugger, text='info', command=lambda: _show('inf', f'ver: {version}\nroute to executable file: {__file__}\nfile name: {__name__}\napp enc: {encoding}')).grid(column=1, row=100)
+            counter = 3
+            print(type(user_local_settings['USER_SETTINGS']['DEBUG_ACTIONS']))
+            for key in user_local_settings['USER_SETTINGS']['DEBUG_ACTIONS']:
+                Button(text=key, command=lambda: exec(user_local_settings['USER_SETTINGS']['DEBUG_ACTIONS'][key])).grid(column=1, row=counter)
+                counter += 1
 
         self.debugger = Tk()
         debugger = self.debugger
-        debugger.title('DEBUG-TOOLS')
+        debugger.title('DEBUGTOOLS')
         debugger.resizable(False, False)
         self.cmd = Text(debugger)
         self.cmd.grid(column=0, row=1, columnspan=1, rowspan=100)
@@ -389,6 +414,8 @@ class Debug:
         def save():
             with open('./data/DATA.NC', 'w', encoding='windows-1251') as nc_file:
                 nc_file.write(encrypt(txt.get("0.0", END), eval(cc)))
+            reload_data_nc()
+            dump_data_nc()
 
         def load_data_nc():
             txt.delete("0.0", END)
@@ -807,6 +834,7 @@ if 'run.pyw' in sys.argv[0]:
         main.update()
 
     Button(main, text='Exit', bg='black', fg='white',
+
                      font=('Consolas', 9), command=sys.exit).place(x=850, y=450)
     action_load = Button(main, text='No action', bg='black', fg='white',
            font=('Consolas', 9))
