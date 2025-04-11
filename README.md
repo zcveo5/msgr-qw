@@ -4,10 +4,10 @@ open-sourse python messenger, based on tkinter and python.
 to use, you need to run server.
 
 requirements:
-python 3.8 or above
-windows 7 or above
-tkinter support
-socket support
+1. python 3.8 or above
+2. windows 7 or above
+3. tkinter support
+4. socket support
 
 q/a
 
