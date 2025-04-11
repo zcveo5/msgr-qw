@@ -1,10 +1,12 @@
 import hashlib
 import json
 import os
+import time
 import tkinter
 import shutil
 import socket
 import threading
+import traceback
 from tkinter import ttk
 from tkinter.messagebox import showinfo as t_showinfo, askyesno, showwarning
 from plugins.core.mod import *
@@ -468,7 +470,10 @@ class Debug:
     @staticmethod
     def relog():
         global bt_server_data
-        bt_server_data = user.get_data()
+        try:
+            bt_server_data = user.get_data()
+        except Exception as _ex:
+            _show('Error ' + str(type(_ex)), str(_ex), ret_win=True).mainloop()
         try:
             if bt_server_data['status'] == 'error':
                 _show('Error', f'{bt_server_data}')
@@ -509,6 +514,19 @@ class Other:
             _show('ok', 'ok')
 
 
+def account_loop():
+    global bt_server_data
+    while True:
+        try:
+            bt_server_data = user.get_data()[1]
+            if bt_server_data['status'] == 'error':
+                raise Exception(f'AuthClient return a Error: {bt_server_data}')
+            time.sleep(0.5)
+        except Exception as _exL:
+            _show('Error AccountLoop ' + str(type(_exL)), str(_exL) + '\n\n' + traceback.format_exc(), ret_win=True).mainloop()
+            break
+
+
 def shutdown():
     main.destroy()
 
@@ -544,6 +562,7 @@ def _show(title, text, ret_win=False, custom_close=None):
         fg = 'black'
         info.configure(bg=bg)
     info.resizable(False, False)
+    info.attributes('-topmost', True)
     Label(info, text=text, bg=bg, fg=fg, font=fnt, justify=LEFT).pack(anchor='center', pady=30, ipadx=10)
     Button(info, text='OK', bg=bg, fg=fg, font=fnt, command=exit_mb).pack(anchor='se', side='bottom', expand=True, ipadx=10, ipady=5)
     if last_obj_id == '':
@@ -696,11 +715,14 @@ def send_message(event=None):
 
 def reinit_ui():
     global default_fg, default_bg, send_entry, chat_window
-    if bt_server_data[1] == 'blocked':
-        chat_window.place_forget()
-        Label(text='You are blocked in BebraTech network').pack()
-        Button(text='Exit from account', command=other_cl.exit_acc).pack()
-        return
+    try:
+        if bt_server_data[1] == 'blocked':
+            chat_window.place_forget()
+            Label(text='You are blocked in BebraTech network').pack()
+            Button(text='Exit from account', command=other_cl.exit_acc).pack()
+            return
+    except KeyError:
+        _show('Error: <class: KeyError>', 'Lost connection to Auth')
 
     Button(text=locale['settings_mm_butt'], command=Settings, bg=default_bg, fg=default_fg, font=font_theme).place(x=800, y=5)
 
@@ -1118,6 +1140,7 @@ if 'run.pyw' in sys.argv[0]:
         if '_show_ip' not in bt_server_data[1]['answer']:
             auth.update_personal_conf(username, ['_show_ip', 'False'])
             Debug().relog()
+        threading.Thread(target=account_loop).start()
     main.configure(bg=default_bg)
     main.title(locale['WINDOW_TITLE_TEXT'])
     if work:
