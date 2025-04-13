@@ -1,14 +1,12 @@
 import hashlib
-import json
-import os
-import time
-import tkinter
 import shutil
+import tkinter
 import socket
 import threading
-import traceback
 from tkinter import ttk
 from tkinter.messagebox import showinfo as t_showinfo, askyesno, showwarning
+
+from data import btaeui
 from plugins.core.mod import *
 import plugins.btac.auth
 auth = plugins.btac.auth
@@ -19,8 +17,9 @@ printr = print
 # init classes and functions
 
 
-class Settings:
+class Settings(btaeui.SidePanel):
     def __init__(self):
+        super().__init__(main, [default_bg, default_fg, f'{font_theme[0]}:{font_theme[1]}'], side='R', title=locale['settings_mm_butt'])
         self.window_other = None
         self.window_debug = None
         self.d_b = None
@@ -33,25 +32,25 @@ class Settings:
         self.theme_button = Button
         self.th_file = Entry
         self.advanced = None
-        global default_bg, default_fg
         self.theme = data['USER_SETTINGS']['THEME']
-        self.window = Tk()
-        self.window.configure(bg=default_bg)
-        self.window.title(locale['settings_mm_butt'])
-        self.window.resizable(False, False)
-        self.window.geometry('200x200')
-        Button(self.window, text=locale['setting_sub_f_THEME'], command=self.sub_f_theme
-               , fg=default_fg, bg=default_bg, font=font_theme).pack(anchor='nw')
-        Button(self.window, text=locale['setting_sub_f_LOCALE'], command=self.sub_f_locale
-               , fg=default_fg, bg=default_bg, font=font_theme).pack(anchor='nw')
-        Button(self.window, text=locale['setting_sub_f_DEBUG'], command=self.sub_f_other
-               , fg=default_fg, bg=default_bg, font=font_theme).pack(anchor='nw')
-        Button(self.window, text=locale['as_button'], command=self.advanced_settings, bg=default_bg,
-               fg=default_fg, font=font_theme).pack(anchor='nw')
-        Button(self.window, text=locale['setting_sub_f_PROFILE'], command=self.sub_f_profile, bg=default_bg,
-               fg=default_fg, font=font_theme).pack(anchor='nw')
-        Button(self.window, text=locale['setting_sub_f_MODS_REPO'], command=self.sub_f_mod_rep, bg=default_bg,
-               fg=default_fg, font=font_theme).pack(anchor='nw')
+        self._create_base()
+
+    def _create_base(self):
+        self.create(Button(text=locale['setting_sub_f_INTERFASE'], command=self.sub_f_ui
+                           , fg=default_fg, bg=default_bg, font=font_theme), 5, 45, anchor='w')
+        self.create(Button(text=locale['setting_sub_f_DEBUG'], command=self.sub_f_other
+                           , fg=default_fg, bg=default_bg, font=font_theme), 5, 75, anchor='w')
+        self.create(Button(text=locale['as_button'], command=self.advanced_settings, bg=default_bg,
+                           fg=default_fg, font=font_theme), 5, 105, anchor='w')
+        self.create(Button(text=locale['setting_sub_f_PROFILE'], command=self.sub_f_profile, bg=default_bg,
+                           fg=default_fg, font=font_theme), 5, 135, anchor='w')
+        self.create(Button(text=locale['setting_sub_f_MODS_REPO'], command=self.sub_f_mod_rep, bg=default_bg,
+                           fg=default_fg, font=font_theme), 5, 165, anchor='w')
+
+    def build(self):
+        self._create_base()
+        super().build()
+
 
     def advanced_settings(self):
         as_win = Tk()
@@ -101,26 +100,44 @@ class Settings:
         except TclError:
             pass
 
-    def sub_f_theme(self):
-        self.window_theme = Tk()
-        self.window_theme.configure(bg=default_bg)
-        self.window_theme.title(locale['setting_sub_f_THEME'])
-        self.window_theme.resizable(False, False)
-        self.window_theme.geometry('200x200')
-        Label(self.window_theme, text=locale['set_theme_txt'], fg=default_fg, bg=default_bg, font=font_theme).pack(anchor='nw', padx=3)
-        longs = os.listdir('./data/theme')
-        self.d_b = ttk.Combobox(self.window_theme, values=longs, state="readonly")
-        self.d_b.bind("<<ComboboxSelected>>", self.sel_t)
-        self.d_b.pack(anchor='nw', padx=3)
-        Button(self.window_theme, text=locale['cct_title'], command=create_custom_theme, bg=default_bg, fg=default_fg, font=font_theme).pack(anchor='nw', padx=3)
+    def sub_f_ui(self):
+        self.destroy()
+        self.build()
+        def sel_t(event):
+            print(event)
+            theme(d_b_t.get())
+            user_local_settings['USER_SETTINGS']['THEME'] = d_b_t.get()
+            reinit_window()
+        def set_l(event):
+            global lng
+            print(event)
+            lng = d_b.get()
+            user_local_settings['USER_SETTINGS']['SEL_LOCALE'] = d_b.get()
+            refresh_locale()
+        self.create(Label(text=locale['setting_sub_f_INTERFASE']), 5, 195, anchor='w')
+        self.create(Label(self.window_theme, text=locale['set_theme_txt'], fg=default_fg, bg=default_bg, font=font_theme), 5, 220, anchor='w')
+        longs_t = os.listdir('./data/theme')
+        d_b_t = ttk.Combobox(self.window_theme, values=longs_t, state="readonly")
+        d_b_t.bind("<<ComboboxSelected>>", sel_t)
+        self.create(d_b_t, 5, 250, anchor='w')
+        longs = os.listdir('./data/locale')
+        self.create(Label(self.window_theme, text=locale['set_locale_txt'], fg=default_fg, bg=default_bg, font=font_theme), 5, 280, anchor='w')
+        d_b = ttk.Combobox(self.window_theme, values=longs, state="readonly")
+        d_b.bind("<<ComboboxSelected>>", set_l)
+        self.create(d_b, 5, 310, anchor='w')
+        self.create(Button(self.window_theme, text=locale['cct_title'], command=create_custom_theme, bg=default_bg, fg=default_fg,
+               font=font_theme), 5, 340, anchor='w')
 
-    def sel_t(self, event):
-        print(event)
-        theme(self.d_b.get())
-        user_local_settings['USER_SETTINGS']['THEME'] = self.d_b.get()
-        reinit_window()
+
 
     def sub_f_locale(self):
+        def set_l(event):
+            global lng
+            print(event)
+            lng = self.d_b.get()
+            user_local_settings['USER_SETTINGS']['SEL_LOCALE'] = self.d_b.get()
+            refresh_locale()
+
         self.window_locale = Tk()
         self.window_locale.configure(bg=default_bg)
         self.window_locale.title(locale['setting_sub_f_LOCALE'])
@@ -129,15 +146,9 @@ class Settings:
         longs = os.listdir('./data/locale')
         Label(self.window_locale, text=locale['set_locale_txt'], fg=default_fg, bg=default_bg, font=font_theme).pack(anchor='nw', padx=3)
         self.d_b = ttk.Combobox(self.window_locale ,values=longs, state="readonly")
-        self.d_b.bind("<<ComboboxSelected>>", self.set_l)
+        self.d_b.bind("<<ComboboxSelected>>", set_l)
         self.d_b.pack(anchor='nw', padx=3)
 
-    def set_l(self, event):
-        global lng
-        print(event)
-        lng = self.d_b.get()
-        user_local_settings['USER_SETTINGS']['SEL_LOCALE'] = self.d_b.get()
-        refresh_locale()
 
     @staticmethod
     def sub_f_profile():
@@ -177,9 +188,9 @@ class Settings:
         self.window_other = Tk()
         self.window_other.title(locale['setting_sub_f_DEBUG'])
         self.window_other.resizable(False, False)
-        self.window_other.geometry('200x200')
+        self.window_other.geometry('300x300')
         Button(self.window_other, text='cut BTAEML', command=other_cl.cut_mod).pack(anchor='nw', padx=3)
-        Button(self.window_other, text='LowLevel Update From server', command=upd_ll).pack(anchor='nw', padx=3)
+        Button(self.window_other, text='LowLevel Update From GitHub repository', command=upd_ll).pack(anchor='nw', padx=3)
         Button(self.window_other, text='LowLvl Update from file', command=upd_ll_ff).pack(anchor='nw', padx=3)
         Button(self.window_other, text='DebugMenu', command=lambda: Debug().debugtools()).pack(anchor='nw', padx=3)
 
@@ -232,11 +243,17 @@ class Settings:
                 mods_select.get(mods_select.curselection())
             except TclError:
                 return
-            mod_data = auth.raw_request({'action': f'get_mod:{mods_select.get(mods_select.curselection())}'})
+            try:
+                mod_data = auth.raw_request({'action': f'get_mod:{mods_select.get(mods_select.curselection())}'})
+            except AttributeError:
+                showerror('DownloadError: AttributeError', 'You use old API version. Please download actual from github.')
             try:
                 down_mod = str(mod_data['answer'])
             except KeyError:
                 showerror('AuthSever_Error', 'KeyError: down_mod is {}')
+                return
+            except UnboundLocalError:
+                showerror('UnboundLocalErrorX0001', 'X0001')
                 return
             down_mod = down_mod.replace('&@', '\n')
             mod = SNConfig(down_mod).load()
@@ -308,17 +325,15 @@ class Debug:
         def unlock():
             var = BooleanVar()
             var.set(True)
-            use_exec_hook = ttk.Button(debugger, text='!exh', command=lambda: self.exc_hook_execute(use_exec_hook, var))
+            use_exec_hook = Button(debugger, text='!exh', command=lambda: self.exc_hook_execute(use_exec_hook, var))
             use_exec_hook.grid(column=0, row=0)
-            ttk.Button(debugger, text='data.nc editor', command=self.data_nc_editor).grid(column=1, row=1)
-            ttk.Button(debugger, text='plugin create', command=self.plug_create).grid(column=1, row=2)
-            ttk.Button(debugger, text='EXECUTE', command=lambda: self.execute(self.cmd.get("0.0", "end"), var.get())).grid(column=1, row=99)
-            ttk.Button(debugger, text='info', command=lambda: _show('inf', f'ver: {version}\nroute to executable file: {__file__}\nfile name: {__name__}\napp enc: {encoding}')).grid(column=1, row=100)
-            counter = 3
-            print(type(user_local_settings['USER_SETTINGS']['DEBUG_ACTIONS']))
-            for key in user_local_settings['USER_SETTINGS']['DEBUG_ACTIONS']:
-                Button(text=key, command=lambda: exec(user_local_settings['USER_SETTINGS']['DEBUG_ACTIONS'][key])).grid(column=1, row=counter)
-                counter += 1
+            Button(debugger, text='data.nc editor', command=self.data_nc_editor).grid(column=1, row=1)
+            Button(debugger, text='plugin create', command=self.plug_create).grid(column=1, row=2)
+            Button(debugger, text='tk_settings', command=self.tk_settings).grid(column=1, row=3)
+
+            Button(debugger, text='EXECUTE', command=lambda: self.execute(self.cmd.get("0.0", "end"), var.get())).grid(column=1, row=99)
+            Button(debugger, text='info', command=lambda: _show('inf',f'ver: {version}\nroute to executable file: {__file__}\nfile name: {__name__}\napp enc: {encoding}')).grid(column=1, row=100)
+
 
         self.debugger = Tk()
         debugger = self.debugger
@@ -498,6 +513,25 @@ class Debug:
 
     def custom_req(self):
         auth.raw_request(eval(self.cmd.get("0.0", END).replace('\n', '')))
+
+    @staticmethod
+    def tk_settings():
+
+        def conf(sc, dpi):
+            user_local_settings['USER_SETTINGS']['SCREEN_SETTINGS'] = [float(sc), int(dpi)]
+
+        tk_setts = Tk()
+        tk_setts.resizable(False, False)
+        Label(tk_setts, text='This settings may break msgr. Be accurate').grid(column=0, row=0, columnspan=2)
+        tk_scale = Entry(tk_setts)
+        tk_dpi_mode = Entry(tk_setts)
+        Label(tk_setts, text='widgets scaling').grid(column=0, row=1)
+        tk_scale.grid(column=1, row=1)
+        Label(tk_setts, text='dpi mode. 0 - default, 1 - dpi from system, 2 - dpi per screen').grid(column=0, row=2)
+        tk_dpi_mode.grid(column=1, row=2)
+        Button(tk_setts, text='Confirm', command=lambda: conf(tk_scale.get(), tk_dpi_mode.get())).grid(column=0, row=3, columnspan=2)
+        Button(tk_setts, text='Optimize for win11', command=lambda: conf(1.4, 1)).grid(column=0, row=4, columnspan=2)
+
 
 
 class Other:
@@ -722,10 +756,11 @@ def reinit_ui():
             Button(text='Exit from account', command=other_cl.exit_acc).pack()
             return
     except KeyError:
-        _show('Error: <class: KeyError>', 'Lost connection to Auth')
-
-    Button(text=locale['settings_mm_butt'], command=Settings, bg=default_bg, fg=default_fg, font=font_theme).place(x=800, y=5)
-
+        pass
+    try:
+        Button(text=locale['settings_mm_butt'], command=settings_cl.build, bg=default_bg, fg=default_fg, font=font_theme).place(x=800, y=5)
+    except NameError:
+        pass
     update = Button(text=locale['refresh_butt'], command=refresh, bg=default_bg, fg=default_fg, font=font_theme)
     update.place(x=520, y=450)
 
@@ -836,11 +871,11 @@ if 'run.pyw' in sys.argv[0]:
     font_theme = ('Consolas', 9)
     debug_mode = False
 
+
     main = Tk()
     main.geometry('900x500')
     main.resizable(False, False)
-    main.title('BTAE_BOOT')
-
+    main.title('MsgrQW - Loading')
 
     main.configure(bg='black')
 
@@ -896,6 +931,7 @@ if 'run.pyw' in sys.argv[0]:
         sys.exit()
 
     lng = user_local_settings['USER_SETTINGS']['SEL_LOCALE']
+    main.tk.call('tk', 'scaling', user_local_settings['USER_SETTINGS']['SCREEN_SETTINGS'][0])
     print('[py][info] loading locale')
     try:
         locale_fl = Config(f'./data/locale/{lng}/locale.cfg', coding=encoding)
@@ -928,6 +964,7 @@ if 'run.pyw' in sys.argv[0]:
         except NameError as theme_load_err:
             showerror('Error', f'main window is destroyed {theme_load_err}')
             sys.exit()
+    main.option_add('*Font', font_theme)
 
     main.configure(bg=default_bg)
     load_lbl.configure(bg=default_bg, fg=default_fg, font=font_theme)
@@ -1077,7 +1114,7 @@ if 'run.pyw' in sys.argv[0]:
         print('LOAD BTAEML')
 
     try:
-        _plugin_objects = get_plugs(sys.argv[1])
+        _plugin_objects = get_plugs()
     except (NameError, FileNotFoundError):
         _plugin_objects = {}
 
@@ -1117,6 +1154,7 @@ if 'run.pyw' in sys.argv[0]:
 
     loading = False
 
+
     main.protocol("WM_DELETE_WINDOW", shutdown)
 
     if run_f_setup:
@@ -1143,6 +1181,11 @@ if 'run.pyw' in sys.argv[0]:
         threading.Thread(target=account_loop).start()
     main.configure(bg=default_bg)
     main.title(locale['WINDOW_TITLE_TEXT'])
+
+
+    settings_cl = Settings()
+    refresh()
+
     if work:
         try:
             main.mainloop()
