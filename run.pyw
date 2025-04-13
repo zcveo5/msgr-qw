@@ -1,13 +1,50 @@
 import json
 import os.path
 import platform
-import sys
+
 import traceback
 from tkinter import Tk, Label, ttk
 from tkinter.messagebox import showerror, askyesno
-import plugins.btac.auth
-import data.btaeui
 from plugins.core.mod import SConfig, decrypt, SNConfig, encrypt, get_win, generate_salt, JsonObject
+import ctypes
+import sys
+from io import TextIOWrapper
+from typing import Literal
+
+import sys
+from typing import Literal, TextIO
+
+
+class Log:
+    def __init__(self, type_: Literal['STDOUT', 'STDERR'], file: TextIO):
+        self.type_ = type_
+        self.file = file
+
+    def write(self, v):
+        if v not in ['', ' ', '\n']:
+            self.file.write(f'{self.type_}: {v}\n')
+            self.file.flush()  # Сбрасываем буфер для немедленной записи
+            sys.__stdout__.write(f'{self.type_}: {v}\n')
+
+    def flush(self):
+        self.file.flush()
+
+
+# Очищаем файл лога
+with open('./data/msgr.log', 'w'):
+    pass
+
+# Открываем файл для записи
+log_file = open('./data/msgr.log', 'a')
+
+# Перенаправляем stdout и stderr
+sys.stderr = Log(type_='STDERR', file=log_file)
+sys.stdout = Log(type_='STDOUT', file=log_file)
+
+try:
+    import requests
+except ModuleNotFoundError:
+    print('!! Update is unavailable: requests not found !!')
 
 # opening datas
 version_0 = '0'
@@ -50,8 +87,6 @@ loader.destroy()
 
 # check LL_Update in RUNT_ACTION
 if base_conf['RUNT_ACTION'] == 'LL_Update':
-    pb = data.btaeui.ProgressBar(Label())
-    pb.i().pack()
     with open('./msgr.py', 'r') as fl:
         with open('./data/code_backup.py', 'w'):
             pass
@@ -60,19 +95,24 @@ if base_conf['RUNT_ACTION'] == 'LL_Update':
         with open('./msgr.py', 'w'):
             pass
         with open('./msgr.py', 'w') as fl:
-            print(data_)
-            server = eval(data_['[SETTINGS]'])['USER_SETTINGS']['BT_SERV']
-            try:
-                plugins.btac.auth.connect(server.split(':')[0], int(server.split(':')[1]))
-                print(plugins.btac.auth.raw_request({'action': 'update'}))
-                fl.write(plugins.btac.auth.raw_request({'action': 'update'})['answer'])
-                base_conf['RUNT_ACTION'] = ''
-            except (ConnectionError, IndexError):
-                print('[loader][error][update] failed connect to server, reverting changes')
-                fl.write(open('./data/code_backup.py', 'r').read())
+            def download_from_github(url, save_path):
+                # Заменяем на raw-ссылку если нужно
+                if 'github.com' in url and 'raw.githubusercontent.com' not in url:
+                    url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
+
+                response = requests.get(url)
+                if response.status_code == 200:
+                    with open(save_path, 'wb') as f:
+                        f.write(response.content)
+                    print(f"Файл сохранен как {save_path}")
+                else:
+                    print(f"Ошибка загрузки: {response.status_code}")
+            # Пример использования:
+            github_url = "https://raw.githubusercontent.com/zcveo5/msgr-qw/main/msgr.py"
+            download_from_github(github_url, "msgr_upd.py")
+            print('Please update from file to complete update')
     else:
         print('[loader][error][update] failed to backup code')
-    plugins.btac.auth.disconnect()
 # checking LL_F_Update in RUNT_ACTION
 if base_conf['RUNT_ACTION'] == 'LL_F_Update':
     print('[loader] updating from file')
@@ -110,7 +150,8 @@ if 'VerSelect' in sys.argv:
 if not os.path.exists(f'{vers}'):
     showerror('Error', f'{vers} is not exists')
     sys.exit()
-
+print(data_)
+ctypes.windll.shcore.SetProcessDpiAwareness(eval(data_['[SETTINGS]'])['USER_SETTINGS']['SCREEN_SETTINGS'][1])
 
 for i in sys.argv:
     if 'BTAE!DebugAction' in i:
