@@ -1,5 +1,7 @@
 import hashlib
+import os.path
 import shutil
+import sys
 import tkinter
 import socket
 import threading
@@ -38,39 +40,17 @@ class Settings(btaeui.SidePanel):
     def _create_base(self):
         self.create(Button(text=locale['setting_sub_f_INTERFASE'], command=self.sub_f_ui
                            , fg=default_fg, bg=default_bg, font=font_theme), 5, 45, anchor='w')
-        self.create(Button(text=locale['setting_sub_f_DEBUG'], command=self.sub_f_other
+        self.create(Button(text=locale['setting_sub_f_DEBUG'], command=self.sub_f_debug
                            , fg=default_fg, bg=default_bg, font=font_theme), 5, 75, anchor='w')
-        self.create(Button(text=locale['as_button'], command=self.advanced_settings, bg=default_bg,
-                           fg=default_fg, font=font_theme), 5, 105, anchor='w')
         self.create(Button(text=locale['setting_sub_f_PROFILE'], command=self.sub_f_profile, bg=default_bg,
-                           fg=default_fg, font=font_theme), 5, 135, anchor='w')
+                           fg=default_fg, font=font_theme), 5, 105, anchor='w')
         self.create(Button(text=locale['setting_sub_f_MODS_REPO'], command=self.sub_f_mod_rep, bg=default_bg,
-                           fg=default_fg, font=font_theme), 5, 165, anchor='w')
+                           fg=default_fg, font=font_theme), 5, 135, anchor='w')
 
     def build(self):
         self._create_base()
         super().build()
 
-
-    def advanced_settings(self):
-        as_win = Tk()
-        as_win.resizable(False, False)
-        as_win.geometry('650x360')
-        as_win.title(locale['as_button'])
-        as_win.configure(bg=default_bg)
-        try:
-            sab = eval(dat_d['[SETTINGS]'])['ADV_DATA']
-        except (json.decoder.JSONDecodeError, KeyError):
-            Label(as_win, text=locale['damaged_data'], bg=default_bg, fg=default_fg, font=font_theme).pack(anchor='center')
-            return
-        try:
-            self.advanced = Listbox(as_win, selectmode=SINGLE, width=100, height=20, bg=default_bg, fg=default_fg, font=font_theme)
-            self.advanced.place(x=0, y=0)
-            for item1 in sab:
-                self.advanced.insert(0, item1)
-            Button(as_win, text=locale['run_asb'], command=self.run_asb, bg=default_bg, fg=default_fg, font=font_theme).place(x=0, y=330)
-        except Exception as _e123x:
-            showerror('err', f'{_e123x}')
 
     def toggle_theme(self):
         global default_fg, default_bg
@@ -87,19 +67,6 @@ class Settings(btaeui.SidePanel):
             default_bg = 'white'
             refresh()
 
-    def run_asb(self):
-        sab1 = eval(dat_d['[SETTINGS]'])
-        try:
-            exec(sab1['ADV_DATA'][self.advanced.get(self.advanced.curselection())])
-        except AttributeError as adv_ex:
-            showwarning(locale['warn_title'], locale['mod_error'] + str(adv_ex))
-        except NameError:
-            showerror(locale['error_title'], locale['damaged_data'])
-        except ModuleNotFoundError:
-            showwarning(locale['warn_title'], locale['mod_error'])
-        except TclError:
-            pass
-
     def sub_f_ui(self):
         self.destroy()
         self.build()
@@ -114,7 +81,13 @@ class Settings(btaeui.SidePanel):
             lng = d_b.get()
             user_local_settings['USER_SETTINGS']['SEL_LOCALE'] = d_b.get()
             refresh_locale()
-        self.create(Label(text=locale['setting_sub_f_INTERFASE']), 5, 195, anchor='w')
+        print(self.his)
+        if 'INTER_LABEL' in self.his:
+            self.destroy()
+            self.his = {}
+            self.build()
+            return
+        self.create(Label(text=locale['setting_sub_f_INTERFASE']), 5, 195, name='INTER_LABEL' ,anchor='w')
         self.create(Label(self.window_theme, text=locale['set_theme_txt'], fg=default_fg, bg=default_bg, font=font_theme), 5, 220, anchor='w')
         longs_t = os.listdir('./data/theme')
         d_b_t = ttk.Combobox(self.window_theme, values=longs_t, state="readonly")
@@ -127,27 +100,6 @@ class Settings(btaeui.SidePanel):
         self.create(d_b, 5, 310, anchor='w')
         self.create(Button(self.window_theme, text=locale['cct_title'], command=create_custom_theme, bg=default_bg, fg=default_fg,
                font=font_theme), 5, 340, anchor='w')
-
-
-
-    def sub_f_locale(self):
-        def set_l(event):
-            global lng
-            print(event)
-            lng = self.d_b.get()
-            user_local_settings['USER_SETTINGS']['SEL_LOCALE'] = self.d_b.get()
-            refresh_locale()
-
-        self.window_locale = Tk()
-        self.window_locale.configure(bg=default_bg)
-        self.window_locale.title(locale['setting_sub_f_LOCALE'])
-        self.window_locale.resizable(False, False)
-        self.window_locale.geometry('200x200')
-        longs = os.listdir('./data/locale')
-        Label(self.window_locale, text=locale['set_locale_txt'], fg=default_fg, bg=default_bg, font=font_theme).pack(anchor='nw', padx=3)
-        self.d_b = ttk.Combobox(self.window_locale ,values=longs, state="readonly")
-        self.d_b.bind("<<ComboboxSelected>>", set_l)
-        self.d_b.pack(anchor='nw', padx=3)
 
 
     @staticmethod
@@ -171,7 +123,7 @@ class Settings(btaeui.SidePanel):
         window_prof.configure(bg=default_bg)
         window_prof.title(locale['setting_sub_f_PROFILE'])
         window_prof.resizable(False, False)
-        window_prof.geometry('200x200')
+        window_prof.geometry(f'200x200+{get_win_pos()}')
         Label(window_prof, text=f"{locale['curr_acc']}: {username}", bg=default_bg, fg=default_fg,
                font=font_theme).pack(anchor='nw', padx=3)
         Button(window_prof, text=locale['un_login'], command=other_cl.exit_acc, bg=default_bg, fg=default_fg,
@@ -180,7 +132,7 @@ class Settings(btaeui.SidePanel):
 
 
 
-    def sub_f_other(self):
+    def sub_f_debug(self):
         def upd_ll_ff():
             base_conf['RUNT_ACTION'] = 'LL_F_Update'
         def upd_ll():
@@ -188,7 +140,7 @@ class Settings(btaeui.SidePanel):
         self.window_other = Tk()
         self.window_other.title(locale['setting_sub_f_DEBUG'])
         self.window_other.resizable(False, False)
-        self.window_other.geometry('300x300')
+        self.window_other.geometry(f'300x300+{get_win_pos()}')
         Button(self.window_other, text='cut BTAEML', command=other_cl.cut_mod).pack(anchor='nw', padx=3)
         Button(self.window_other, text='LowLevel Update From GitHub repository', command=upd_ll).pack(anchor='nw', padx=3)
         Button(self.window_other, text='LowLvl Update from file', command=upd_ll_ff).pack(anchor='nw', padx=3)
@@ -244,7 +196,7 @@ class Settings(btaeui.SidePanel):
             except TclError:
                 return
             try:
-                mod_data = auth.raw_request({'action': f'get_mod:{mods_select.get(mods_select.curselection())}'})
+                mod_data = eval(auth.raw_request({'action': f'get_mod:{mods_select.get(mods_select.curselection())}'}))
             except AttributeError:
                 showerror('DownloadError: AttributeError', 'You use old API version. Please download actual from github.')
             try:
@@ -297,9 +249,18 @@ class Settings(btaeui.SidePanel):
         modl_win.title('Plugins Repository')
         modl_win.configure(bg=default_bg)
         try:
-            modlist = eval(user.get_modlist()['answer'])
+            raw = eval(user.get_modlist())
+            modlist = eval(raw['answer'])
         except KeyError:
             modlist = ['Not connected to BebraTech server']
+        except TypeError as ex_modl:
+            try:
+                adds = raw
+            except Exception as adds_err:
+                adds = adds_err
+            showerror('Error: TypeError', f'x00004 (MOD_REP_INIT_FAILED)\nfirst info: {adds}\nsecond info: {ex_modl}')
+            modl_win.destroy()
+            return
         Button(modl_win, text=locale['plg_repo_SUB'], command=load_repo, bg=default_bg, fg=default_fg, font=font_theme).place(x=0, y=0)
         Button(modl_win, text=locale['plg_installed_SUB'], command=load_installed, bg=default_bg, fg=default_fg, font=font_theme).place(x=100, y=0)
         mods_var = Variable(modl_win, modlist)
@@ -316,7 +277,7 @@ class Settings(btaeui.SidePanel):
         load_installed()
         name_mod = Label(modl_win, text='', bg=default_bg, fg=default_fg, font=font_theme, justify=LEFT)
         name_mod.place(x=500, y=90)
-        modl_win.geometry('900x500')
+        modl_win.geometry(f'900x500+{get_win_pos()}')
         modl_win.resizable(False, False)
 
 
@@ -330,6 +291,7 @@ class Debug:
             Button(debugger, text='data.nc editor', command=self.data_nc_editor).grid(column=1, row=1)
             Button(debugger, text='plugin create', command=self.plug_create).grid(column=1, row=2)
             Button(debugger, text='tk_settings', command=self.tk_settings).grid(column=1, row=3)
+            Button(debugger, text='restart', command=restart_app).grid(column=1, row=3)
 
             Button(debugger, text='EXECUTE', command=lambda: self.execute(self.cmd.get("0.0", "end"), var.get())).grid(column=1, row=99)
             Button(debugger, text='info', command=lambda: _show('inf',f'ver: {version}\nroute to executable file: {__file__}\nfile name: {__name__}\napp enc: {encoding}')).grid(column=1, row=100)
@@ -533,6 +495,10 @@ class Debug:
         Button(tk_setts, text='Optimize for win11', command=lambda: conf(1.4, 1)).grid(column=0, row=4, columnspan=2)
 
 
+def get_win_pos():
+    spl = main.geometry().split('+')
+    return f'{spl[1]}+{spl[2]}'
+
 
 class Other:
     @staticmethod
@@ -555,7 +521,7 @@ def account_loop():
             bt_server_data = user.get_data()[1]
             if bt_server_data['status'] == 'error':
                 raise Exception(f'AuthClient return a Error: {bt_server_data}')
-            time.sleep(0.5)
+            time.sleep(5)
         except Exception as _exL:
             _show('Error AccountLoop ' + str(type(_exL)), str(_exL) + '\n\n' + traceback.format_exc(), ret_win=True).mainloop()
             break
@@ -647,6 +613,11 @@ def reinit_window():
         chat_window = Text(main, fg=default_fg, bg=default_bg, font=font_theme, width=110)
         chat_window.place(x=0, y=0)
         refresh()
+
+
+def restart_app():
+    main.destroy()
+    os.execl(sys.executable, sys.executable, *sys.argv)
 
 
 def change_lng(a):
@@ -931,7 +902,11 @@ if 'run.pyw' in sys.argv[0]:
         sys.exit()
 
     lng = user_local_settings['USER_SETTINGS']['SEL_LOCALE']
-    main.tk.call('tk', 'scaling', user_local_settings['USER_SETTINGS']['SCREEN_SETTINGS'][0])
+    try:
+        main.tk.call('tk', 'scaling', user_local_settings['USER_SETTINGS']['SCREEN_SETTINGS'][0])
+    except KeyError:
+        user_local_settings['USER_SETTINGS'].update({'SCREEN_SETTINGS': [1.0, 0]})
+        main.tk.call('tk', 'scaling', user_local_settings['USER_SETTINGS']['SCREEN_SETTINGS'][0])
     print('[py][info] loading locale')
     try:
         locale_fl = Config(f'./data/locale/{lng}/locale.cfg', coding=encoding)
@@ -1114,7 +1089,7 @@ if 'run.pyw' in sys.argv[0]:
         print('LOAD BTAEML')
 
     try:
-        _plugin_objects = get_plugs()
+        _plugin_objects = get_plugs(sys.argv[1])
     except (NameError, FileNotFoundError):
         _plugin_objects = {}
 
@@ -1185,6 +1160,12 @@ if 'run.pyw' in sys.argv[0]:
 
     settings_cl = Settings()
     refresh()
+
+    if os.path.exists('./msgr_upd.py'):
+        upd = askyesno('Info', locale['update_detected'])
+        if upd:
+            base_conf['RUNT_ACTION'] = 'ON_FINISH_RESTART+LL_F_UPDATE'
+            work = False
 
     if work:
         try:
