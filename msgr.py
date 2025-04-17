@@ -836,7 +836,7 @@ def change_username(a):
 
 
 if 'run.pyw' in sys.argv[0]:
-    print('MSGR QW BY BEBRA TECH, WITH BTAE')
+    print('MSGR QW BY BEBRA TECH (C) 2023 - 2025')
     default_bg = 'black'
     default_fg = 'white'
     font_theme = ('Consolas', 9)
@@ -1162,10 +1162,11 @@ if 'run.pyw' in sys.argv[0]:
     refresh()
 
     if os.path.exists('./msgr_upd.py'):
-        upd = askyesno('Info', locale['update_detected'])
-        if upd:
-            base_conf['RUNT_ACTION'] = 'ON_FINISH_RESTART+LL_F_UPDATE'
-            work = False
+        if open('./msgr.py', 'r').read() != open('./msgr_upd.py', 'r').read():
+            upd = askyesno('Info', locale['update_detected'])
+            if upd:
+                base_conf['RUNT_ACTION'] = 'ON_FINISH_RESTART+LL_F_UPDATE'
+                work = False
 
     if work:
         try:
