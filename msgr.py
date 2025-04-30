@@ -1,15 +1,18 @@
 import hashlib
 import os.path
 import shutil
+import time
 import tkinter
 import socket
 import threading
+import traceback
 from tkinter import ttk
 from tkinter.messagebox import showinfo as t_showinfo, askyesno
 from data import btaeui
 from plugins.core.mod import *
-import plugins.btac.auth
+import plugins.btac.auth, plugins.btac.chat
 auth = plugins.btac.auth
+chat_lib = plugins.btac.chat
 work = True
 printr = print
 
@@ -144,6 +147,8 @@ class Settings(btaeui.SidePanel):
 
 
     def sub_f_debug(self):
+        def exc():
+            raise MemoryError
         def upd_ll_ff():
             base_conf['RUNT_ACTION'] = 'LL_F_Update'
         def upd_ll():
@@ -155,7 +160,9 @@ class Settings(btaeui.SidePanel):
         Button(self.window_other, text='cut BTAEML', command=other_cl.cut_mod).pack(anchor='nw', padx=3)
         Button(self.window_other, text='LowLevel Update From GitHub repository', command=upd_ll).pack(anchor='nw', padx=3)
         Button(self.window_other, text='LowLvl Update from file', command=upd_ll_ff).pack(anchor='nw', padx=3)
+        Button(self.window_other, text='Get Exception', command=lambda: exc()).pack(anchor='nw', padx=3)
         Button(self.window_other, text='DebugMenu', command=lambda: Debug().debugtools()).pack(anchor='nw', padx=3)
+        Button(self.window_other, text='statistics', command=lambda: threading.Thread(target=Debug().stats).start()).pack(anchor='nw', padx=3)
 
     @staticmethod
     def sub_f_mod_rep():
@@ -323,6 +330,22 @@ class Debug:
         unlock()
 
         debugger.protocol("WM_DELETE_WINDOW", lambda: self.close_debug(debugger, self.cmd))
+    @staticmethod
+    def stats():
+        win = Tk()
+        win.geometry('300x200')
+        win.resizable(False, False)
+        info = Label(win, text='', justify=LEFT)
+        info.pack(anchor='nw')
+        work_stats = True
+        while work_stats:
+            try:
+                info.configure(text=f'lng:{lng}\nstats_thread_id:{threading.enumerate().index(threading.current_thread())}\nchat_lib.msgs:{chat_lib.msgs}\nchat_lib.online_list:{chat_lib.online_list}'
+                                    f'\ntype-onl-list:{type(chat_lib.online_list)}\ntype-msgs:{type(chat_lib.msgs)}')
+            except TclError:
+                break
+            win.update()
+
 
     @staticmethod
     def plug_create():
@@ -513,7 +536,10 @@ class Other:
     def exit_acc():
         user_local_settings['USER_SETTINGS']['USERNAME'] = ''
         user_local_settings['USER_SETTINGS']['PASSWORD'] = ''
+        dump_data_nc()
+        reload_data_nc()
         _show('Info', 'Restart is required to exit your account')
+
 
     @staticmethod
     def cut_mod():
@@ -529,13 +555,13 @@ def account_loop():
             bt_server_data = user.get_data()
             if bt_server_data['status'] == 'error':
                 raise Exception(f'AuthClient return a Error: {bt_server_data}')
-            time.sleep(5)
         except Exception as _exL:
             _show('Error AccountLoop ' + str(type(_exL)), str(_exL) + '\n\n' + traceback.format_exc(), ret_win=True).mainloop()
             break
 
 
 def shutdown():
+    reinit_window()
     main.quit()
     main.destroy()
 
@@ -698,40 +724,25 @@ def refresh_locale():
         showerror(locale['error_title'], locale['unk_error'])
 
 
-def receive_messages():
-    while True:
-        try:
-            message = client_socket.recv(1024).decode('utf-8')
-            chat_window.insert(END, message + '\n\n')
-        except Exception as conn_err:
-            if str(conn_err) != '[WinError 10038] An operation was attempted on something that is not a socket':
-                print(conn_err)
-                showerror('recv_error', 'An existing connection with CHAT_SERVER was forcibly closed by the Host.')
-                client_socket.close()
-                break
-            else:
-                break
-
-
-
 def send_message(event=None, is_private=False, **kw):
     print(event)
     to_send = {'text': send_entry.get(), '_show_ip': bt_server_data[1]['answer']['_show_ip'], 'name': username}
     if is_private:
         to_send.update({'to': 'private', 'to_cl': kw['private_addr']})
-    message = f"""{to_send}"""
+    else:
+        to_send.update({'to': 'public'})
+    message = to_send
     my_message.set("")
     try:
-        client_socket.send(message.encode('utf-8'))
+        chat.send(message)
     except OSError:
         showerror('Error', 'SOCK_DISCONNECTED')
         to_send['text'] += ' (!) SOCK_DISCONNECTED'
-    chat_window.insert(END, f"You: {to_send['text']}" + '\n\n')
     send_entry.delete("0", END)
 
 
 def reinit_ui():
-    global default_fg, default_bg, send_entry, chat_window
+    global default_fg, default_bg, send_entry, chat_window, online_listbox
     try:
         if bt_server_data[1] == 'blocked':
             chat_window.place_forget()
@@ -744,6 +755,14 @@ def reinit_ui():
         Button(text=locale['settings_mm_butt'], command=settings_cl.build, bg=default_bg, fg=default_fg, font=font_theme).place(x=800, y=5)
     except NameError:
         pass
+
+    if not loading:
+        chat.send({'action_for_chat_server': 'OnlineList'})
+
+    var = Variable(main, value=chat_lib.online_list)
+    online_listbox = Listbox(height=18, width=17, bg=default_bg, fg=default_fg, font=font_theme,
+                          listvariable=var)
+    online_listbox.place(x=777, y=35)
 
     send_entry = Entry(width=110, bg=default_bg, fg=default_fg, font=font_theme, textvariable=my_message)
     send_entry.bind("<Return>", send_message)
@@ -810,6 +829,25 @@ def save_theme(bg, fg, fnt, name):
     reinit_window()
 
 
+def complete_recv():
+    while True:
+        try:
+            chat_lib.cl.send({'action_for_chat_server': 'OnlineList'})
+        except OSError:
+            break
+        main.after(0, update_online_list, chat_lib.online_list)
+        time.sleep(1)
+
+
+def update_online_list(online_list):
+    try:
+        online_listbox.delete(0, END)  # Очистить текущий список
+        for user in online_list:
+            online_listbox.insert(END, user)  # Добавить новых пользователей
+    except Exception as _ex:
+        print(_ex)
+        print(traceback.format_exc())
+
 def select_server(a):
     global server
     server = a
@@ -851,15 +889,13 @@ def send_private():
         send_entry.insert(END, msg.get())
         send_message(None, True, private_addr=to_cl.get())
     win = Tk()
+    win.title('Private MSG Sender')
     Label(win, text='Private MSG Sender\n--------------------', font=('Consolas', 12), justify=LEFT).pack(anchor='w')
-    my_ip = Entry(win)
-    my_ip.pack(anchor='w')
-    my_ip.insert(END, client_socket.getsockname())
     to_cl = Entry(win)
     to_cl.pack(anchor='w')
     msg = Entry(win)
     msg.pack(anchor='w')
-    to_cl.insert(END, 'receiver ip')
+    to_cl.insert(END, 'receiver username')
     msg.insert(END, 'message')
     Button(win, text='Send', command=_send).pack(anchor='w')
     win.resizable(False, False)
@@ -919,8 +955,8 @@ if 'run' in sys.argv[0]:
     encoding = 'UTF-8'
     files = ['./data/DATA.NC']
     base_conf = json.load(open('./data/base_data.json', 'r'))
-    receive_thread = threading.Thread(target=receive_messages)
     other_cl = Other()
+    online_listbox = Listbox()
     try:
         dat = SNConfig(decrypt(open('./data/DATA.NC', 'r', encoding='windows-1251').read(), eval(base_conf['CC'])))
         dat_d = dat.load()
@@ -1066,6 +1102,10 @@ if 'run' in sys.argv[0]:
             bt_server_data = (False, {})
         print('bt data')
         print(bt_server_data)
+        if not bt_server_data[0] and 'another client' in bt_server_data[1]['answer']:
+            printin_load_lbl(bt_server_data[1]['answer'], 'e')
+            action_load.configure(text='Exit from account', command=other_cl.exit_acc)
+            main.mainloop()
         if not bt_server_data[0] and bt_server_data[1]['answer'] != 'Incorrect password':
             def serv_sel_tmp():
                 select_bt_server('')
@@ -1094,11 +1134,11 @@ if 'run' in sys.argv[0]:
                 'text'] += f'\nDebug Info:\nIncorrect IP in <bt_server> variable.'
         action_load.configure(text='Reset BebraTech server address', command=serv_sel_tmp)
         main.mainloop()
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    chat = chat_lib.Chat(server.split(':')[0], int(server.split(':')[1]))
     try:
         printin_load_lbl('Connecting to Chat...')
 
-        client_socket.connect((server.split(':')[0], int(server.split(':')[1])))
+        chat.connect()
     except Exception as chat_err:
         def serv_1_sel_tmp():
             select_server('')
@@ -1179,7 +1219,8 @@ if 'run' in sys.argv[0]:
         chat_window = Text(fg=default_fg, bg=default_bg, font=font_theme, width=110)
         chat_window.place(x=0, y=0)
     if not run_f_setup and work and bt_server_data[1] != 'blocked':
-        receive_thread.start()
+        t = {'action_for_chat_server': 'MyUSER', 'username': username}
+        chat.send(f'{t}')
         if '_show_ip' not in bt_server_data[1]['answer']:
             auth.update_personal_conf(username, ['_show_ip', 'False'])
             auth.update_personal_conf(username, ['_admin', 'False'])
@@ -1200,6 +1241,8 @@ if 'run' in sys.argv[0]:
     print('main thread started')
     if work:
         try:
+            threading.Thread(target=chat.async_recv).start()
+            threading.Thread(target=complete_recv).start()
             main.mainloop()
         except Exception as main_thread_ex:
             print(main_thread_ex)
@@ -1221,8 +1264,8 @@ if 'run' in sys.argv[0]:
     print('disconnecting from servers')
 
     auth.disconnect()
-    client_socket.shutdown(socket.SHUT_RDWR)
-    client_socket.close()
+    chat.shutdown(socket.SHUT_RDWR)
+    chat.close()
     print('backup data.nc and base_data')
 
     dat_d['[SETTINGS]'] = str(user_local_settings)
@@ -1230,5 +1273,3 @@ if 'run' in sys.argv[0]:
     with open('./data/DATA.NC', 'w', encoding='windows-1251') as fl:
         fl.write(encrypt(dat.dump(dat_d), eval(base_conf['CC'])))
     print('finish')
-
-print('finish FROM GITH')
