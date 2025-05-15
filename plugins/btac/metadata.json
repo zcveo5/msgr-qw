@@ -1,1 +1,1 @@
-{"name": "btac", "file": "auth", "class": "AuthPlugin", "state": "True", "description": "Plugin version of Authentication on BebraTech servers"}
+{"name": "btac", "file": "mod", "class": "AuthPlugin", "state": "True"}
