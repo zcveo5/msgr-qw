@@ -1,0 +1,1 @@
+#$#$SERcode&@app = None&@&@class Main:&@%TAB@staticmethod&@%TABdef give_data(v):&@%TAB%TABglobal app&@%TAB%TABapp = v&@&@%TAB@staticmethod&@%TABdef execute():&@%TAB%TABapp.main.destroy()&@&@#$#$SERclass&@Main&@#$#$SERname&@backup&@

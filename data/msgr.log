@@ -1,0 +1,42 @@
+[STDOUT] ~ LOG STARTED ~
+[STDOUT][loader][info] launcher&exception hook v.0
+[STDOUT][loader][info] win release 11
+[STDOUT] - ~ * PROGRAM * ~ - 
+[STDOUT][msgr.py] MSGR QW BY BEBRA TECH (C) 2023 - 2025
+[STDOUT][msgr.py][info] init window and vars
+[STDOUT][btaeui.py][win MsgrQW - Loading] creating widget load_lbl
+[STDOUT][btaeui.py][advlog][load_lbl] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][load_lbl] builded place
+[STDOUT][btaeui.py][win MsgrQW - Loading] creating widget loading_pb
+[STDOUT][btaeui.py][advlog][loading_pb] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][loading_pb] builded place
+[STDOUT][msgr.py][info] created loading screen
+[STDOUT][btaeui.py][win MsgrQW - Loading] creating widget exit_button
+[STDOUT][btaeui.py][advlog][exit_button] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][exit_button] builded place
+[STDOUT][btaeui.py][win MsgrQW - Loading] creating widget action_load
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][action_load] builded place
+[STDOUT][msgr.py][info] created loading_screen buttons
+[STDOUT][msgr.py][info] inited vars and ui-elements
+[STDOUT][msgr.py][info] loading data.nc
+[STDOUT][msgr.py][info] loaded
+[STDOUT][msgr.py][info] setting SCREEN_SETTINGS
+[STDOUT][msgr.py][info] loading locale
+[STDOUT][msgr.py][info] locale_fl locale/ru/locale.cfg
+[STDOUT][msgr.py][info] language ru
+[STDOUT][msgr.py][info] init theme
+[STDOUT][msgr.py][info] loading theme hh
+[STDOUT][btaeui.py][side nastroyki] p recreating loaded
+[STDOUT][btaeui.py][advlog][load_lbl] IS DESTROY : False CALLED configure
+[STDOUT][btaeui.py][advlog][exit_button] IS DESTROY : False CALLED configure
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED configure
+[STDOUT][msgr.py][info] setup theme for loading screen
+[STDOUT][msgr.py][info] init data.nc variables
+[STDOUT][msgr.py][info] upa completed
+[STDOUT][msgr.py][info] servers selected
+[STDOUT][msgr.py][info] login completed
+[STDOUT][msgr.py][info] connecting to servers
+[STDOUT][msgr.py][info] connecting to account server
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED configure
+[STDOUT][msgr.py][error] Not connected to BebraTech Authentication Server: Server on 192.168.88.24:8176 not found. program loading stopped

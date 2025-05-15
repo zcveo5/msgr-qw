@@ -6,7 +6,7 @@ from __future__ import annotations
 from tkinter.ttk import Combobox
 from typing import TextIO
 import traceback
-from tkinter.messagebox import showerror, showinfo
+from tkinter.messagebox import showinfo
 import _tkinter
 import sys
 from tkinter import *
@@ -14,6 +14,16 @@ import random
 import json
 import os
 import time
+try:
+    with open('./data/logs/core.log', 'w'):
+        pass
+except FileNotFoundError:
+    os.mkdir('./data/logs')
+    with open('./data/logs/core.log', 'w'):
+        pass
+
+def print_adv(v):
+    print(f'[core.py]{v}')
 
 app = None
 class CorePlugin:
@@ -67,6 +77,8 @@ def load(theme_load, def_bg=None, def_fg=None, def_font=None):
                 def_font = (tmp[0], int(tmp[len(tmp) - 1]))
             except IndexError:
                 def_font = ''
+            except ValueError:
+                def_font = tmp[0]
     return def_bg, def_fg, def_font
 
 
@@ -79,7 +91,7 @@ class Locale:
         if item in self.lc_dct:
             return self.lc_dct[item]
         else:
-            return f'locale_off:{item}'
+            return f'UNK:{item}'
 
 
 def tk_wait(sec: int, win):
@@ -157,7 +169,7 @@ def generate_salt():
     randomized_symbols = {}
     symbols_c = symbols.copy()
     for i in range(len(symbols_c)):
-        print(i)
+        print_adv(i)
         cur_ind = random.randint(0, len(symbols) - 1)
         randomized_symbols.update({symbols_c[i]: symbols[cur_ind]})
         symbols.remove(symbols[cur_ind])
@@ -192,33 +204,35 @@ def get_win(exc_with_traceback='No-Information-Provided',
     try:
         rep = Tk()
     except _tkinter.TclError:
-            print('[FATAL_ERROR] Invalid TCL configuration')
-            print(traceback.format_exc())
-            sys.exit()
-    rep.title('Fatal Error')
+            print_adv('[FATAL_ERROR] Invalid TCL configuration')
+            print_adv(traceback.format_exc())
+            return
+    rep.title('Error')
     rep.resizable(False, False)
     Label(rep, text=f'Program {program_title} has been crashed.\n\n\n'
-                    f'There is some crash info:\n{exc_with_traceback}', justify=LEFT).pack()
+                    f'{exc_with_traceback}', justify=LEFT).pack()
+    Button(rep, text='Exit', command=sys.exit).pack(anchor='w')
     rep.mainloop()
-    sys.exit()
 
 
 def autoload_objects(_plugs):
     for key, value in _plugs.items():
         cur_mod = key
         try:
-            print(f'[plug_api][info] auto loading mod {key}')
+            print_adv(f'[plug_api][info] auto loading mod {key}')
             st_time = time.time()
             value['plugin'].execute()
             fin_time = time.time()
-            print(f"[plug_api][info] completed in {str(fin_time - st_time).split('.')[0]}sec")
+            print_adv(f"[plug_api][info] completed in {str(fin_time - st_time).split('.')[0]}sec")
         except Exception as _ex:
-            print(f'[plug_api][error] {cur_mod} loaded with error. skip '
+            print_adv(f'[plug_api][error] {cur_mod} loaded with error. skip '
                           f'(error details: {_ex})')
+            with open('./data/logs/core.log', 'a') as fl:
+                fl.write(f'``````````````load err {cur_mod}\n{traceback.format_exc()}')
 
 
-def get_plugs():
-    print('[plug_api][info] compiling plugins')
+def get_plugs(main_module):
+    print_adv('[plug_api][info] compiling plugins')
     compiled_plugins = {}
     for name in os.listdir("./plugins"):
         if os.path.isdir(os.path.join("./plugins", name)):
@@ -229,19 +243,21 @@ def get_plugs():
                     if plugin_data['state'] == 'True':
                         imported = __import__(f"plugins.{name}.{plugin_data['file']}")
                         compiled_plugins[plugin_data['name']] = {"plugin": (getattr(getattr(getattr(imported, name), plugin_data['file']), plugin_data['class']))(), "metadata": plugin_data}
-                print(f'[plug_api][info] compiled plugin {name}')
+                print_adv(f'[plug_api][info] compiled plugin {name}')
             except Exception as _ex:
-                print(f'[plug_api][error] invalid plugin {name}, skip ({_ex})')
-    print('[plug_api][info] pre-loading plugins')
-    mod = __import__('msgr')
+                print_adv(f'[plug_api][error] invalid plugin {name}, skip ({_ex})')
+                with open('./data/logs/core.log', 'a') as fl:
+                    fl.write(f'{name} error\n{traceback.format_exc()}')
+    print_adv('[plug_api][info] pre-loading plugins')
+    mod = __import__(main_module)
     for key, value in compiled_plugins.items():
         try:
             value['plugin'].give_data(mod)
-            print(f'[plug_api][info] {key} pre-loaded')
+            print_adv(f'[plug_api][info] {key} pre-loaded')
         except AttributeError as preload_ex:
-            print(f'[plug_api][error] invalid plugin_MainThread {key}. details: {preload_ex}')
-    print('[plug_api][info] completed')
-    print(compiled_plugins)
+            print_adv(f'[plug_api][error] invalid plugin_MainThread {key}. details: {preload_ex}')
+    print_adv('[plug_api][info] completed')
+    print_adv(compiled_plugins)
     return compiled_plugins
 
 
@@ -321,7 +337,7 @@ class FirstSetup:
 
             def locale_help(event):
                 lc = self.funcs[1](sel_lc.get(), True)
-                print(sel_lc.get())
+                print_adv(sel_lc.get())
                 self.locale = lc
                 ini1()
                 lb1.pack_forget()
