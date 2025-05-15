@@ -1,20 +1,24 @@
 import hashlib
 import os.path
 import shutil
-import time
-import tkinter
 import socket
 import threading
+import time
 import traceback
 from tkinter import ttk
-from tkinter.messagebox import showinfo as t_showinfo, askyesno
+from tkinter.messagebox import showinfo as t_showinfo, askyesno, showerror
 from data import btaeui
+from data.btaeui import *
 from plugins.core.mod import *
 import plugins.btac.auth, plugins.btac.chat
 auth = plugins.btac.auth
 chat_lib = plugins.btac.chat
 work = True
-printr = print
+stop_event = threading.Event()
+
+
+def pprint(v, *args, **kwargs):
+    print(f'[{os.path.basename(__file__)}]{v}', *args, **kwargs)
 
 
 # init classes and functions
@@ -35,48 +39,60 @@ class Settings(btaeui.SidePanel):
         self.theme_button = Button
         self.th_file = Entry
         self.advanced = None
-        self.theme = data['USER_SETTINGS']['THEME']
+        self.theme = user_local_settings['USER_SETTINGS']['THEME']
         self._create_base()
 
     def _create_base(self):
-        self.create(Label(text='loaded'), x=-100, y=-100, name='loaded')
-        self.create(Button(text=locale['setting_sub_f_INTERFASE'], command=self.sub_f_ui
-                           , fg=default_fg, bg=default_bg, font=font_theme), 5, 45, anchor='w')
-        self.create(Button(text=locale['setting_sub_f_DEBUG'], command=self.sub_f_debug
-                           , fg=default_fg, bg=default_bg, font=font_theme), 5, 75, anchor='w')
-        self.create(Button(text=locale['setting_sub_f_PROFILE'], command=self.sub_f_profile, bg=default_bg,
-                           fg=default_fg, font=font_theme), 5, 105, anchor='w')
-        self.create(Button(text=locale['setting_sub_f_MODS_REPO'], command=self.sub_f_mod_rep, bg=default_bg,
-                           fg=default_fg, font=font_theme), 5, 135, anchor='w')
+        self.create(Label(), x=-100, y=-100, name='loaded')
+        self.create(Button(self._o, text=locale['setting_sub_f_INTERFASE'],
+                           command=self.sub_f_ui, fg=default_fg,
+                           bg=default_bg, font=font_theme),
+                    x=5, y=45, anchor='w')
+
+        self.create(Button(self._o, text=locale['setting_sub_f_DEBUG'],
+                           command=self.sub_f_debug, fg=default_fg,
+                           bg=default_bg, font=font_theme),
+                    x=5, y=75, anchor='w')
+
+        self.create(Button(self._o, text=locale['setting_sub_f_PROFILE'],
+                           command=self.sub_f_profile, bg=default_bg,
+                           fg=default_fg, font=font_theme),
+                    x=5, y=105, anchor='w')
+
+        self.create(Button(self._o, text=locale['setting_sub_f_MODS_REPO'],
+                           command=self.sub_f_mod_rep, bg=default_bg,
+                           fg=default_fg, font=font_theme),
+                    x=5, y=135, anchor='w')
 
     def build(self):
         if 'loaded' not in self.his:
             self._create_base()
-            print(self.his)
             super().build()
         else:
-            self.his.pop('loaded')
+            # Полная очистка перед перестроением
             self.destroy()
+            self._create_base()
+            super().build()
 
     def toggle_theme(self):
         global default_fg, default_bg
         if self.theme == 'light':
             self.theme = 'black'
-            data['USER_SETTINGS']['THEME'] = self.theme
+            user_local_settings['USER_SETTINGS']['THEME'] = self.theme
             default_bg = 'black'
             default_fg = 'white'
             refresh()
         elif self.theme == 'black':
             self.theme = 'light'
-            data['USER_SETTINGS']['THEME'] = self.theme
+            user_local_settings['USER_SETTINGS']['THEME'] = self.theme
             default_fg = 'black'
             default_bg = 'white'
             refresh()
 
     def sub_f_ui(self):
         def sel_t(event):
-            print('sl_t')
-            print(event)
+            pprint('sl_t')
+            pprint(event)
             theme(d_b_t.get())
             user_local_settings['USER_SETTINGS']['THEME'] = d_b_t.get()
             reinit_window()
@@ -84,14 +100,14 @@ class Settings(btaeui.SidePanel):
             reload_data_nc()
         def set_l(event):
             global lng
-            print('sl_l')
-            print(event)
+            pprint('sl_l')
+            pprint(event)
             lng = d_b.get()
             user_local_settings['USER_SETTINGS']['SEL_LOCALE'] = d_b.get()
             dump_data_nc()
             reload_data_nc()
             refresh_locale()
-        print(self.his)
+        pprint(self.his)
         self.window_locale = Tk()
         self.window_locale.configure(bg=default_bg)
         self.window_locale.title(locale['setting_sub_f_LOCALE'])
@@ -118,21 +134,21 @@ class Settings(btaeui.SidePanel):
         def p_ip_check():
             global bt_server_data
             try:
-                print(bt_server_data)
+                pprint(bt_server_data)
                 if bt_server_data[1]['answer']['_show_ip'] == 'True':
                     auth.update_personal_conf(username, ['_show_ip', 'False'])
-                    _show('inf', locale['p-ip-disabled'])
+                    show('inf', locale['p-ip-disabled'])
                 else:
                     auth.update_personal_conf(username, ['_show_ip', 'True'])
-                    _show('inf', locale['p-ip-enabled'])
+                    show('inf', locale['p-ip-enabled'])
                 bt_server_data = user.get_data()
             except ConnectionResetError:
-                _show('Error',
+                show('Error',
                       'An existing connection was forcibly closed by the remote host\nBebraTech Server currently unavailable.')
             except TypeError:
-                _show('Error', 'TypeError')
+                show('Error', 'TypeError')
             except Exception as pip_ex:
-                _show('Error', f'{pip_ex}\n{traceback.format_exc()}')
+                show('Error', f'{pip_ex}\n{traceback.format_exc()}')
         window_prof = Tk()
         window_prof.configure(bg=default_bg)
         window_prof.title(locale['setting_sub_f_PROFILE'])
@@ -162,12 +178,12 @@ class Settings(btaeui.SidePanel):
         Button(self.window_other, text='LowLvl Update from file', command=upd_ll_ff).pack(anchor='nw', padx=3)
         Button(self.window_other, text='Get Exception', command=lambda: exc()).pack(anchor='nw', padx=3)
         Button(self.window_other, text='DebugMenu', command=lambda: Debug().debugtools()).pack(anchor='nw', padx=3)
-        Button(self.window_other, text='statistics', command=lambda: threading.Thread(target=Debug().stats).start()).pack(anchor='nw', padx=3)
+        Button(self.window_other, text='statistics', command=lambda: threading.Thread(target=Debug().stats, daemon=True).start()).pack(anchor='nw', padx=3)
 
     @staticmethod
     def sub_f_mod_rep():
         def get_mod_info(event):
-            print(event)
+            pprint(event)
             try:
                 name_mod['text'] = mods_select.get(mods_select.curselection())
             except TclError:
@@ -206,8 +222,10 @@ class Settings(btaeui.SidePanel):
                 else:
                     disable_butt['text'] = locale['repo_enable_text']
                 disable_butt['state'] = NORMAL
+                disable_butt.place(x=580, y=30)
             except KeyError:
                 disable_butt['state'] = DISABLED
+                disable_butt.place_forget()
         def install_mod():
             try:
                 mods_select.get(mods_select.curselection())
@@ -228,9 +246,9 @@ class Settings(btaeui.SidePanel):
                 return
             down_mod = down_mod.replace('&@', '\n')
             mod = SNConfig(down_mod).load()
-            print(mod)
+            pprint(mod)
             compiled = {'meta': eval(mod['meta']), 'code': mod['code']}
-            print(compiled)
+            pprint(compiled)
             try:
                 os.mkdir(f'./plugins/{compiled["meta"]["name"]}')
             except FileExistsError:
@@ -291,7 +309,6 @@ class Settings(btaeui.SidePanel):
         action_butt = Button(modl_win, text='', command=install_mod, bg=default_bg, fg=default_fg, font=font_theme)
         action_butt.place(x=500, y=30)
         disable_butt = Button(modl_win, text='', command=toggle_mod, bg=default_bg, fg=default_fg, font=font_theme)
-        disable_butt.place(x=580, y=30)
         state_pl = Label(modl_win, text='', bg=default_bg, fg=default_fg, font=font_theme)
         state_pl.place(x=500, y=60)
         load_installed()
@@ -301,8 +318,34 @@ class Settings(btaeui.SidePanel):
         modl_win.resizable(False, False)
 
 
+class TickSys:
+    def __init__(self, tick_rate: int = 20):
+        """Tick System for apps
+
+        :param tick_rate - tick per second
+        """
+        self.tick_rate = tick_rate
+        self.stop = False
+        self.t = 0
+
+    def start_tick(self):
+        """Starts tick system. Need to run by threading.Thread"""
+        while not self.stop:
+            try:
+                time.sleep(1 / self.tick_rate)
+                self.t += 1
+            except KeyboardInterrupt:
+                break
+            except Exception as _tick_thread_ex:
+                print(_tick_thread_ex)
+                return
+        else:
+            return
+
 class Debug:
     def __init__(self):
+        with open('./data/logs/stats_infile_log.log', 'w'):
+            pass
         self.cmd = None
         self.debugger = None
 
@@ -317,7 +360,7 @@ class Debug:
             Button(debugger, text='tk_settings', command=self.tk_settings).grid(column=1, row=3)
 
             Button(debugger, text='EXECUTE', command=lambda: self.execute(self.cmd.get("0.0", "end"), var.get())).grid(column=1, row=99)
-            Button(debugger, text='info', command=lambda: _show('inf',f'ver: {version}\nroute to executable file: {__file__}\nfile name: {__name__}\napp enc: {encoding}')).grid(column=1, row=100)
+            Button(debugger, text='info', command=lambda: show('inf', f'ver: {version}\nroute to executable file: {__file__}\nfile name: {__name__}\napp enc: {encoding}')).grid(column=1, row=100)
 
 
         self.debugger = Tk()
@@ -332,17 +375,39 @@ class Debug:
         debugger.protocol("WM_DELETE_WINDOW", lambda: self.close_debug(debugger, self.cmd))
     @staticmethod
     def stats():
+        log_inf_bool = False
+        def toggle_log_infile():
+            nonlocal log_inf_bool
+            if log_inf_bool:
+                log_inf.configure(text='log_any_change_in_file:F')
+            else:
+                log_inf.configure(text='log_any_change_in_file:T')
+            log_inf_bool = not log_inf_bool
         win = Tk()
-        win.geometry('300x200')
+        win.title(f'Statistics t:{threading.enumerate().index(threading.current_thread())}')
         win.resizable(False, False)
         info = Label(win, text='', justify=LEFT)
+        log_inf = Button(win, text='log_any_change_in_file:F', command=toggle_log_infile)
+        log_inf.pack(anchor='nw')
         info.pack(anchor='nw')
-        work_stats = True
-        while work_stats:
+        last_inf = ''
+        while not stop_event.is_set():
             try:
-                info.configure(text=f'lng:{lng}\nstats_thread_id:{threading.enumerate().index(threading.current_thread())}\nchat_lib.msgs:{chat_lib.msgs}\nchat_lib.online_list:{chat_lib.online_list}'
-                                    f'\ntype-onl-list:{type(chat_lib.online_list)}\ntype-msgs:{type(chat_lib.msgs)}')
-            except TclError:
+                info.configure(text=f'===EXEC_F_INF===\nlng:{lng}\ntheme:{user_local_settings["USER_SETTINGS"]["THEME"]}\nstats_thread_id:{threading.enumerate().index(threading.current_thread())}\nchat_lib.online_list:{chat_lib.online_list}'
+                                    f'\ntype-onl-list:{type(chat_lib.online_list)}\ntype-msgs:{type(chat_lib.msgs)}\nmain_winfo:{main.winfo_exists()}\nonline_listbox_winfo:{online_listbox.winfo_exists()}\n'
+                                    f'setts_class:{Settings}\nflog_exists:{os.path.exists("./data/logs/stats_infile_log.log")}\n'
+                                    f'chat_lib_private:{chat_lib.private_msgs}\nunreads:{unread}\nreaded:{read_msgs}\nchat:{chat_selected}\norig_chat_List{orig_chat_list}\n'
+                                    f'===P_LOG_INF===\nmain_sys.stdout:{sys.stdout.__class__}\nmain_sys.stdout_output_file:{sys.stdout.name}\n'
+                                    f'===MSGS_INF===\n')
+                if log_inf_bool and last_inf != info['text']:
+                    with open('./data/logs/stats_infile_log.log', 'a') as f_l:
+                        try:
+                            f_l.write(f'\n\nchange at {tick_sys.t}tick\n' + info['text'])
+                        except UnicodeError:
+                            f_l.write(data.ru_to_en.replace_letters(f'\n\nchange at {tick_sys.t}tick\n' + info['text']))
+                    last_inf = info['text']
+            except (TclError, RuntimeError):
+                show('Error', traceback.format_exc())
                 break
             win.update()
 
@@ -369,10 +434,13 @@ class Debug:
             conf = SNConfig('').dump(dist).replace('\n', '&@')
 
             answer = eval(auth.raw_request({'action': 'upload_mod', 'MOD_NAME': metadata['name'], 'PLUG_CODE': conf}))
-            if answer['answer'] == 'uploaded':
-                _show('Info', 'Uploaded')
-            else:
-                _show('Error', 'Not Uploaded')
+            try:
+                if answer['answer'] == 'uploaded':
+                    show('Info', 'Uploaded')
+                else:
+                    show('Error', 'Not Uploaded')
+            except KeyError:
+                show('e', 'bebra tech server not exists')
 
         def decompile():
             path = f'{name_plug.get()}'
@@ -405,7 +473,7 @@ class Debug:
             plug = open(f'./plugins/backup/{name_plug.get()}.plug').read().replace('&@', '\n').replace('%TAB', '    ')
             name_plug.delete("0", END)
             conf_plug = SNConfig(plug).load()
-            print(conf_plug)
+            pprint(conf_plug)
             code.insert("0.0", conf_plug['code'])
             name_plug.insert("0", conf_plug['name'])
             class_plug.insert("0", conf_plug['class'])
@@ -472,19 +540,19 @@ class Debug:
                 try:
                     exec(code_, globals().update({'cmd': ''}), locals())
                 except Exception as ex:
-                    print(f'ex {ex}')
+                    pprint(f'ex {ex}')
 
-            threading.Thread(target=exec__).start()
+            threading.Thread(target=exec__, daemon=True).start()
     @staticmethod
     def relog():
         global bt_server_data
         try:
             bt_server_data = user.get_data()
         except Exception as _ex:
-            _show('Error ' + str(type(_ex)), str(_ex), ret_win=True).mainloop()
+            show('Error ' + str(type(_ex)), str(_ex), ret_win=True).mainloop()
         try:
             if bt_server_data[1]['status'] == 'error':
-                _show('Error', f'{bt_server_data}')
+                show('Error', f'{bt_server_data}')
         except TypeError:
             pass
 
@@ -499,7 +567,7 @@ class Debug:
     @staticmethod
     def theme_reset():
         global default_fg, default_bg
-        data['USER_SETTINGS']['THEME'] = 'black'
+        user_local_settings['USER_SETTINGS']['THEME'] = 'black'
         default_bg = 'black'
         default_fg = 'white'
         main.configure(bg=default_bg)
@@ -538,14 +606,14 @@ class Other:
         user_local_settings['USER_SETTINGS']['PASSWORD'] = ''
         dump_data_nc()
         reload_data_nc()
-        _show('Info', 'Restart is required to exit your account')
+        show('Info', 'Restart is required to exit your account')
 
 
     @staticmethod
     def cut_mod():
         if askyesno('confirmation', 'do you really want to disable BTAEML?'):
             user_local_settings['USER_SETTINGS']['BTAEML'] = 'False'
-            _show('ok', 'ok')
+            show('ok', 'ok')
 
 
 def account_loop():
@@ -556,7 +624,7 @@ def account_loop():
             if bt_server_data['status'] == 'error':
                 raise Exception(f'AuthClient return a Error: {bt_server_data}')
         except Exception as _exL:
-            _show('Error AccountLoop ' + str(type(_exL)), str(_exL) + '\n\n' + traceback.format_exc(), ret_win=True).mainloop()
+            show('Error AccountLoop ' + str(type(_exL)), str(_exL) + '\n\n' + traceback.format_exc(), ret_win=True).mainloop()
             break
 
 
@@ -567,7 +635,7 @@ def shutdown():
 
 
 def plugin_info():
-    _show('BTAEML (BebraTech Application Engine Mod Loader)', "BTAEML (BebraTech Application Engine Mod Loader) coded by BebraTech Inc. (BTAE authors).\n"
+    show('BTAEML (BebraTech Application Engine Mod Loader)', "BTAEML (BebraTech Application Engine Mod Loader) coded by BebraTech Inc. (BTAE authors).\n"
                                          "ALL plugins/mods made by other people (not BebraTech Inc.)\n"
                                          "We aren't take responsibility if your PC damaged by plugins/mods.\n\n"
                                          "BTAEML is included in all BTAE version 2.8.9 and above.\n"
@@ -575,7 +643,7 @@ def plugin_info():
                                          "BTAEML Team (BebraTech subdivision) 2025")
 
 
-def _show(title, text, ret_win=False, custom_close=None):
+def show(title, text, ret_win=False, custom_close=None):
     global last_obj_id
     obj_id = f'{text}{text}{ret_win}{custom_close}'
     info = Tk()
@@ -607,8 +675,8 @@ def _show(title, text, ret_win=False, custom_close=None):
 
 
 def theme(file2, ret=False):
-    global default_fg, default_bg, font_theme
-    print(f'theme {file2}')
+    global default_fg, default_bg, font_theme, settings_cl
+    pprint(f'[info] loading theme {file2}')
     file1 = f"./data/theme/{file2.replace('.theme', '')}.theme"
     try:
         theme_ = load(open(file1, 'r', encoding=encoding), default_bg, default_fg, font_theme)
@@ -621,34 +689,27 @@ def theme(file2, ret=False):
     except LookupError:
         showerror(locale['error_title'], locale['theme_error'] + ' LookUp')
         return
-
-    try:
-        main.configure(bg=theme_[0])
-    except TclError:
-        showerror(locale['error_title'], locale['theme_error'] + ' Tcl')
-        return
     font_theme = theme_[2]
     default_fg = theme_[1]
     default_bg = theme_[0]
-    data['USER_SETTINGS']['THEME'] = file2.replace('.theme', '')
+    user_local_settings['USER_SETTINGS']['THEME'] = file2.replace('.theme', '')
+    settings_cl = Settings()
+    if not loading:
+        main.destroy_all_in()
+        reinit_ui(True)
     if ret:
         return font_theme, default_fg, default_bg
 
 
-def reinit_window():
-        global main, chat_window, font_theme
-        try:
-            main.destroy()
-        except TclError:
-            pass
-        main = None
-        main = Tk()
-        main.geometry('900x500')
-        main.resizable(False, False)
+def reinit_window(no_reinit_theme=False):
+        global main, chat_window, font_theme, online_listbox
+        main.destroy_all_in()
         main.title(locale['WINDOW_TITLE_TEXT'])
         chat_window = Text(main, fg=default_fg, bg=default_bg, font=font_theme, width=110)
         chat_window.place(x=0, y=0)
-        refresh()
+        main = main
+        online_listbox = online_listbox
+        refresh(no_reinit_theme)
 
 
 def change_lng(a):
@@ -671,13 +732,13 @@ def refresh_locale_easy(a, ret=False):
 
 
 def theme_easy(a, ret=False):
-    data['USER_SETTINGS']['THEME'] = a
+    user_local_settings['USER_SETTINGS']['THEME'] = a
     if ret:
         try:
             theme_ = load(open(f'./data/theme/{a}.theme', 'r', encoding=encoding))
             return theme_[2], theme_[1], theme_[0]
         except Exception as theme_easy_ex:
-            print(theme_easy_ex)
+            pprint(theme_easy_ex)
 
 
 def change_enc(a):
@@ -687,7 +748,7 @@ def change_enc(a):
 
 def refresh_locale():
     global locale, locale_fl, encoding
-    print(f'ref locale {lng}')
+    pprint(f'ref locale {lng}')
     try:
         locale_fl = Config(f'./data/locale/{lng}/locale.cfg', coding=encoding)
         locale = Locale(locale_fl)
@@ -725,8 +786,12 @@ def refresh_locale():
 
 
 def send_message(event=None, is_private=False, **kw):
-    print(event)
-    to_send = {'text': send_entry.get(), '_show_ip': bt_server_data[1]['answer']['_show_ip'], 'name': username}
+    pprint(event)
+    try:
+        to_send = {'text': send_entry.get(), '_show_ip': bt_server_data[1]['answer']['_show_ip'], 'name': username}
+    except KeyError:
+        show('Error', 'Not connected to Auth server')
+        return
     if is_private:
         to_send.update({'to': 'private', 'to_cl': kw['private_addr']})
     else:
@@ -741,15 +806,40 @@ def send_message(event=None, is_private=False, **kw):
     send_entry.delete("0", END)
 
 
-def reinit_ui():
-    global default_fg, default_bg, send_entry, chat_window, online_listbox
+def load_chat(event):
+    global chat_select_menu, chat_selected
+    chat_select_menu = False
+    chat_selected = orig_chat_list[event.widget.curselection()[0]]
+    if chat_selected == 'General':
+        if 'General' in unread:
+            unread['General'] = 0
+        event.widget.destroy()
+        reinit_window(True)
+    else:
+        event.widget.destroy()
+        reinit_window(True)
+
+
+def back_to_chat_select():
+    global chat_select_menu, chat_selected
+    chat_select_menu = True
+    chat_selected = ''
+    main.his['back_to_chat_select'].destroy()
+    main.his.pop('back_to_chat_select')
+    main.his['chat_label'].destroy()
+    main.his.pop('chat_label')
+    reinit_window(True)
+
+
+def reinit_ui(no_reinit_theme=False):
+    global default_fg, default_bg, send_entry, chat_window, online_listbox, send_button, send_private_button
     try:
         if bt_server_data[1] == 'blocked':
             chat_window.place_forget()
             Label(text='You are blocked in BebraTech network').pack()
             Button(text='Exit from account', command=other_cl.exit_acc).pack()
             return
-    except KeyError:
+    except (KeyError, NameError):
         pass
     try:
         Button(text=locale['settings_mm_butt'], command=settings_cl.build, bg=default_bg, fg=default_fg, font=font_theme).place(x=800, y=5)
@@ -764,29 +854,75 @@ def reinit_ui():
                           listvariable=var)
     online_listbox.place(x=777, y=35)
 
-    send_entry = Entry(width=110, bg=default_bg, fg=default_fg, font=font_theme, textvariable=my_message)
-    send_entry.bind("<Return>", send_message)
-    send_entry.place(x=0, y=400)
+    main.configure(bg=default_bg)
+    if 'chat_select' in main.his:
+        main.his['chat_select'].destroy()
+        main.his.pop('chat_select')
+    chat_select_listbox = main.create('chat_select', Listbox, width=110, height=30, bg=default_bg, fg=default_fg).tk
+    if chat_select_menu:
+        pprint(['[info] ===================== LOADING CHAT SELECT'])
+        chat_select_listbox.insert(END, 'General')
+        for chat_name in chat_lib.private_msgs.keys():
+            chat_select_listbox.insert(END, chat_name)
+            if chat_name not in orig_chat_list:
+                orig_chat_list.append(chat_name)
+        chat_select_listbox.place(x=0, y=0)
+        chat_select_listbox.bind('<<ListboxSelect>>', load_chat)
+    elif chat_selected == 'General':
+        pprint(['[info] ===================== LOADING GENERAL'])
+        chat_select_listbox.place_forget()
+        main.create('back_to_chat_select', Button, True, bg=default_bg, fg=default_fg, font=font_theme, text=locale['back'], command=back_to_chat_select).build('place', x=0, y=0)
+        main.create('chat_label', Label, True, bg=default_bg, fg=default_fg, font=font_theme, text=locale['chat_txt'] + ': ' + chat_selected).build('place', x=80, y=0)
+        send_entry = Entry(width=110, bg=default_bg, fg=default_fg, font=font_theme, textvariable=my_message)
+        send_entry.bind("<Return>", send_message)
+        send_entry.place(x=0, y=400)
+        send_button = Button(text=locale['send_button'], bg=default_bg, fg=default_fg, font=font_theme, command=send_message)
+        send_button.place(x=800, y=400)
+        send_private_button = Button(text='Send Private', bg=default_bg, fg=default_fg, font=font_theme,
+                                     command=send_private)
+        send_private_button.place(x=800, y=350)
+        chat_window.place(x=0, y=30)
+    elif chat_selected != 'General':
+        pprint([f'[info] ===================== LOADING PRIVATE {chat_selected}'])
+        chat_window.place_forget()
+        online_listbox.place_forget()
+        def send_reply():
+            send_message(None, True, private_addr=chat_selected)
 
-    send_button = Button(text=locale['send_button'], bg=default_bg, fg=default_fg, font=font_theme, command=send_message)
-    send_button.place(x=800, y=400)
+        main.create('back_to_chat_select', Button, bg=default_bg, fg=default_fg, font=font_theme, text=locale['back'],
+                    command=back_to_chat_select).build('place', x=0, y=0)
+        main.create('chat_label', Label, bg=default_bg, fg=default_fg, font=font_theme,
+                    text=locale['chat_txt'] + ': ' + chat_selected).build('place', x=80, y=0)
+        send_entry = Entry(width=110, bg=default_bg, fg=default_fg, font=font_theme, textvariable=my_message)
+        send_entry.place(x=0, y=400)
+        send_button = Button(text=locale['send_reply_button'], bg=default_bg, fg=default_fg, font=font_theme,
+                             command=send_reply)
+        send_button.place(x=800, y=400)
+        chat_window_private = main.create('chat_window_private', Text, True, fg=default_fg, bg=default_bg, font=font_theme, width=110).tk
+        chat_window_private.place(x=0, y=30)
 
-    send_button = Button(text='Send Private', bg=default_bg, fg=default_fg, font=font_theme,
-                         command=send_private)
-    send_button.place(x=800, y=350)
+    if not no_reinit_theme:
+        if user_local_settings['USER_SETTINGS']['THEME'] == 'light':
+            default_fg = 'black'
+            main.configure(bg='white')
+            main.update()
+            default_bg = 'white'
+        elif user_local_settings['USER_SETTINGS']['THEME'] == 'black':
+            default_bg = 'black'
+            main.configure(bg='black')
+            main.update()
+            default_fg = 'white'
+        else:
+            theme(user_local_settings['USER_SETTINGS']['THEME'])
 
-    if data['USER_SETTINGS']['THEME'] == 'light':
-        default_fg = 'black'
-        main.configure(bg='white')
-        main.update()
-        default_bg = 'white'
-    elif data['USER_SETTINGS']['THEME'] == 'black':
-        default_bg = 'black'
-        main.configure(bg='black')
-        main.update()
-        default_fg = 'white'
-    else:
-        theme(data['USER_SETTINGS']['THEME'])
+
+def read_all():
+    unread['General'] = 0
+    read_msgs['General'] = chat_lib.loaded_msgs
+
+    for chat_name in chat_lib.loaded_private_msgs:
+        unread[chat_name] = 0
+        read_msgs[chat_name] = chat_lib.loaded_private_msgs[chat_name]
 
 
 def prog_credits():
@@ -812,6 +948,8 @@ def create_custom_theme():
     fl_ent = Entry(theme_create, width=30, bg=default_bg, fg=default_fg, font=font_theme)
     fl_ent.grid(column=1, row=3)
     Button(theme_create, text=locale['cct_save'], command=lambda: save_theme(bg_ent.get(), fg_ent.get(), fnt_ent.get(), fl_ent.get()), bg=default_bg, fg=default_fg, font=font_theme).grid(column=0, row=4)
+    Button()
+
 
 
 def save_theme(bg, fg, fnt, name):
@@ -830,23 +968,52 @@ def save_theme(bg, fg, fnt, name):
 
 
 def complete_recv():
-    while True:
-        try:
-            chat_lib.cl.send({'action_for_chat_server': 'OnlineList'})
-        except OSError:
-            break
-        main.after(0, update_online_list, chat_lib.online_list)
-        time.sleep(1)
+    pprint('[crt] hello')
+    try:
+        while not stop_event.is_set():
+            try:
+                chat_lib.cl.send({'action_for_chat_server': 'OnlineList'})
+                main.after(0, chat_win_ref, chat_lib.msgs)
+                main.after(0, update_online_list, chat_lib.online_list)
+                if chat_selected not in ['General', '']:
+                    main.after(0, chat_win_private_ref, chat_lib.private_msgs[chat_selected])
+            except Exception as _ex:
+                pprint(f'[complete_recv_thread] exception : {type(_ex)} {_ex} \n{traceback.format_exc()}')
+                return
+            time.sleep(0.5)
+        else:
+            pprint('[crt] exited')
+            return
+    except RuntimeError:
+        pprint(f'[complete_recv_thread] RUNT_START exception : {type(RuntimeError)} {RuntimeError} \n{traceback.format_exc()}')
+        return
 
 
 def update_online_list(online_list):
     try:
         online_listbox.delete(0, END)  # Очистить текущий список
-        for user in online_list:
-            online_listbox.insert(END, user)  # Добавить новых пользователей
+        for _user in online_list:
+            online_listbox.insert(END, _user)  # Добавить новых пользователей
     except Exception as _ex:
-        print(_ex)
-        print(traceback.format_exc())
+        pprint(_ex)
+        pprint(traceback.format_exc())
+
+
+def chat_win_ref(to):
+    if chat_selected == 'General':
+        chat_window.delete("0.0", END)
+        for msg in '\n'.join(to):
+            if 'PRIVATE: ' not in msg:
+                chat_window.insert(END, msg)
+
+
+def chat_win_private_ref(to):
+        try:
+            main.his['chat_window_private'].tk.delete("0.0", END)
+            main.his['chat_window_private'].tk.insert("0.0", '\n'.join(to))
+        except (KeyError, TclError):
+            pass
+
 
 def select_server(a):
     global server
@@ -867,20 +1034,20 @@ def dump_data_nc():
 
 
 def reload_data_nc():
-    global dat, dat_d, user_local_settings, setting_raw, data
+    global dat, dat_d, user_local_settings, setting_raw
     global username, password, server, bt_server, lng
     try:
         dat = SNConfig(decrypt(open('./data/DATA.NC', 'r', encoding='windows-1251').read(), eval(base_conf['CC'])))
         dat_d = dat.load()
         setting_raw = dat_d['[SETTINGS]']
-        user_local_settings = data = eval(setting_raw)
+        user_local_settings = eval(setting_raw)
         username = user_local_settings['USER_SETTINGS']['USERNAME']
         password = user_local_settings['USER_SETTINGS']['PASSWORD']
         server = user_local_settings['USER_SETTINGS']['SERVER']
         bt_server = user_local_settings['USER_SETTINGS']['BT_SERV']
         lng = user_local_settings['USER_SETTINGS']['SEL_LOCALE']
     except Exception as nc_ex_rel:
-        _show('Error', f'Error reloading DATA.NC. {type(nc_ex_rel)}')
+        show('Error', f'Error reloading DATA.NC. {type(nc_ex_rel)}')
 
 
 def send_private():
@@ -906,24 +1073,44 @@ def change_username(a):
     user_local_settings['USER_SETTINGS']['USERNAME'] = a
 
 
+
+def update_chat_list(this):
+    main.his['chat_select'].tk.delete("0", END)
+    main.his['chat_select'].tk.insert(END, f'General ({this})')
+    for chat_name in chat_lib.private_msgs.keys():
+        main.his['chat_select'].tk.insert(END, chat_name + f' ({unread[chat_name]})')
+
+
 if 'run' in sys.argv[0]:
-    print('MSGR QW BY BEBRA TECH (C) 2023 - 2025')
+    pprint(' MSGR QW BY BEBRA TECH (C) 2023 - 2025')
+    tick_sys = TickSys()
+    threading.Thread(target=tick_sys.start_tick, daemon=True).start()
     default_bg = 'black'
     default_fg = 'white'
     font_theme = ('Consolas', 9)
     debug_mode = False
-    stop_event = threading.Event()
-
-    main = Tk()
-    main.geometry('900x500')
+    chat_select_menu = True
+    chat_selected = ''
+    unread = {}
+    read_msgs = {}
+    orig_chat_list = ['General']
+    complete_recv_thread = threading.Thread(target=complete_recv, daemon=True)
+    main = Win()
+    main.geometry([900, 500])
     main.resizable(False, False)
     main.title('MsgrQW - Loading')
+    pprint('[info] init window and vars')
 
     main.configure(bg='black')
 
-    load_lbl = Label(main, text='Loading...', bg='black', fg='white',
+    load_lbl = main.create('load_lbl', Label, text='Loading...', bg='black', fg='white',
                      font=('Consolas', 9), justify=LEFT)
-    load_lbl.place(x=0, y=0)
+    load_lbl.build('place', x=0, y=0)
+
+    pb = main.create('loading_pb', ProgressBar, len_to_count=11, bg='black', fg='white', font=('Consolas', 9))
+    pb.build('place', x=450, y=490, anchor='center')
+
+    pprint('[info] created loading screen')
 
     def printin_load_lbl(v, level='i'):
         if level == 'i':
@@ -932,18 +1119,18 @@ if 'run' in sys.argv[0]:
             load_lbl['text'] += '\n' + v + '\n\nClick "Exit" to exit program.'
         main.update()
 
-    Button(main, text='Exit', bg='black', fg='white',
+    exit_button = main.create('exit_button', Button, text='Exit', bg='black', fg='white', font=('Consolas', 9), command=sys.exit)
+    exit_button.build('place', x=850, y=450)
+    action_load = main.create('action_load', Button, text='No action', bg='black', fg='white', font=('Consolas', 9))
+    action_load.build('place', x=10, y=450)
 
-                     font=('Consolas', 9), command=sys.exit).place(x=850, y=450)
-    action_load = Button(main, text='No action', bg='black', fg='white',
-           font=('Consolas', 9))
-    action_load.place(x=10, y=450)
+    pprint('[info] created loading_screen buttons')
 
     main.update()
     main.protocol('WM_DELETE_WINDOW', sys.exit)
 
     if 'BTAE!debugMode_ENABLE' in sys.argv:
-        print('Debug Mode is enabled')
+        pprint('[info] Debug Mode is enabled')
         debug_mode = True
 
     run_f_setup = False
@@ -951,33 +1138,43 @@ if 'run' in sys.argv[0]:
     work = True
     last_obj_id = ''
     loading = True
+    chat_sel_menu = False
+    send_button = Button()
+    send_private_button = Button()
     version = '0'
     encoding = 'UTF-8'
     files = ['./data/DATA.NC']
     base_conf = json.load(open('./data/base_data.json', 'r'))
     other_cl = Other()
     online_listbox = Listbox()
+
+    pprint('[info] inited vars and ui-elements')
+
+    pprint('[info] loading data.nc')
     try:
         dat = SNConfig(decrypt(open('./data/DATA.NC', 'r', encoding='windows-1251').read(), eval(base_conf['CC'])))
         dat_d = dat.load()
     except Exception as _nc_ex:
-        print(f'[py][fatal] data.nc not loaded, {_nc_ex}, {type(_nc_ex)}')
+        pprint(f'[error] data.nc not loaded, {_nc_ex}, {type(_nc_ex)}')
         showerror('Error1', 'DATA.NC damaged')
-        sys.exit()
+        raise Exception('Error1', 'DATA.NC damaged')
     try:
         setting_raw = dat_d['[SETTINGS]']
-        user_local_settings = data = eval(setting_raw)
+        user_local_settings = eval(setting_raw)
     except Exception as data_nc_load_ex:
         showerror('Error2', f'DATA.NC damaged, {data_nc_load_ex}')
-        sys.exit()
+        raise Exception('Error2', 'DATA.NC damaged')
 
+    pb.tk.plus()
+    pprint('[info] loaded')
     lng = user_local_settings['USER_SETTINGS']['SEL_LOCALE']
+    pprint('[info] setting SCREEN_SETTINGS')
     try:
         main.tk.call('tk', 'scaling', user_local_settings['USER_SETTINGS']['SCREEN_SETTINGS'][0])
     except KeyError:
         user_local_settings['USER_SETTINGS'].update({'SCREEN_SETTINGS': [1.0, 0]})
         main.tk.call('tk', 'scaling', user_local_settings['USER_SETTINGS']['SCREEN_SETTINGS'][0])
-    print('[py][info] loading locale')
+    pprint('[info] loading locale')
     try:
         locale_fl = Config(f'./data/locale/{lng}/locale.cfg', coding=encoding)
     except UnicodeDecodeError:
@@ -985,46 +1182,55 @@ if 'run' in sys.argv[0]:
         locale_fl = Config(f'./data/locale/{lng}/locale.cfg', coding=encoding)
     locale = Locale(locale_fl)
 
-    print(f'[py][info] locale_fl locale/{lng}/locale.cfg')
-    print(f'[py][info] language {lng}')
+    pprint(f'[info] locale_fl locale/{lng}/locale.cfg')
+    pprint(f'[info] language {lng}')
+    pb.tk.plus()
+
 
     for i in sys.argv:
         if 'BootUpAction' in i:
             exec(i.split('$=%')[1])
 
-
-    if data['USER_SETTINGS']['THEME'] == 'light':
+    pprint('[info] init theme')
+    if user_local_settings['USER_SETTINGS']['THEME'] == 'light':
         default_fg = 'black'
         main.configure(bg='white')
         main.update()
         default_bg = 'white'
-    elif data['USER_SETTINGS']['THEME'] == 'black':
+    elif user_local_settings['USER_SETTINGS']['THEME'] == 'black':
         default_bg = 'black'
         main.configure(bg='black')
         main.update()
         default_fg = 'white'
     else:
         try:
-            theme(data['USER_SETTINGS']['THEME'])
+            theme(user_local_settings['USER_SETTINGS']['THEME'])
         except NameError as theme_load_err:
             showerror('Error', f'main window is destroyed {theme_load_err}')
-            sys.exit()
+            raise Exception('Error', f'main window is destroyed {theme_load_err}')
     main.option_add('*Font', font_theme)
+
+    pb.tk.plus()
 
     main.configure(bg=default_bg)
     load_lbl.configure(bg=default_bg, fg=default_fg, font=font_theme)
-    Button(main, text='Exit', bg=default_bg, fg=default_fg, font=font_theme, command=sys.exit).place(x=850, y=450)
-    main.update()
+    exit_button.configure(bg=default_bg, fg=default_fg, font=font_theme)
     action_load.configure(bg=default_bg, fg=default_fg, font=font_theme)
+    pb.tk.configure(bg=default_bg, fg=default_fg, font=font_theme)
+    main.update()
+    pprint('[info] setup theme for loading screen')
 
     username = user_local_settings['USER_SETTINGS']['USERNAME']
     password = user_local_settings['USER_SETTINGS']['PASSWORD']
     server = user_local_settings['USER_SETTINGS']['SERVER']
     bt_server = user_local_settings['USER_SETTINGS']['BT_SERV']
     hash_method = user_local_settings['USER_SETTINGS']['HASHING_METHOD']
+    pprint('[info] init data.nc variables')
 
+    pb.tk.plus()
 
     if eval(dat_d['[SETTINGS]'])['USER_SETTINGS']['FIRST_BOOT'] == 'True':
+        pprint('[info] first boot, upa')
         policy_win = Tk()
         policy_win.title('User Policy Agreement')
         Label(policy_win, text='Please agree with user policy', font=('Consolas', 10)).pack()
@@ -1033,9 +1239,11 @@ if 'run' in sys.argv[0]:
         Button(policy_win, text='Continue', command=lambda: exec('policy_win.quit()\npolicy_win.destroy()'), font=('Consolas', 10)).pack()
         policy_win.mainloop()
 
+    pprint('[info] upa completed')
+    pb.tk.plus()
 
-    print(bt_server, server)
     if bt_server == '' or server == '':
+        pprint('[info] selecting server')
         printin_load_lbl('Please, select server')
 
         def select_servers(a, b):
@@ -1064,9 +1272,11 @@ if 'run' in sys.argv[0]:
         Button(server_select_win, text=locale['conf_server'], command=lambda: select_servers(server_entry.get(), bt_server_entry.get())).pack()
         server_select_win.mainloop()
 
-    print('cont')
+    pprint('[info] servers selected')
+    pb.tk.plus()
 
     if username == '' or password == '':
+        pprint('[info] login to account')
         printin_load_lbl('Please, login/register in your account')
         def conf_login(a, b, win):
             user_local_settings['USER_SETTINGS']['USERNAME'] = a
@@ -1091,17 +1301,22 @@ if 'run' in sys.argv[0]:
         passw_entry.pack()
         Button(login_win, text=locale['conf_login_tex'], command=lambda: conf_login(usr_entry.get(), passw_entry.get(), login_win)).pack()
         login_win.mainloop()
+
+    pprint('[info] login completed')
+    pb.tk.plus()
+    pprint('[info] connecting to servers')
+
     bt_server_data = (False, {})
     printin_load_lbl('Connecting to account...')
     try:
-        print('connecting to account...')
+        pprint('[info] connecting to account server')
         user = auth.User(username, password, bt_server.split(':')[0], int(bt_server.split(':')[1]))
         try:
             bt_server_data = user.get_data()
         except AttributeError:
             bt_server_data = (False, {})
-        print('bt data')
-        print(bt_server_data)
+        pprint('bt data')
+        pprint(bt_server_data)
         if not bt_server_data[0] and 'another client' in bt_server_data[1]['answer']:
             printin_load_lbl(bt_server_data[1]['answer'], 'e')
             action_load.configure(text='Exit from account', command=other_cl.exit_acc)
@@ -1112,7 +1327,7 @@ if 'run' in sys.argv[0]:
                 dump_data_nc()
             printin_load_lbl('Not connected to BebraTech Authentication Server', 'e')
             if debug_mode:
-                load_lbl['text'] += f'\nDebug Info:\nbt_server_data[0] is False, means Unknown Error.\n{bt_server_data}'
+                load_lbl['text'] += f'\nDebug Info:\n0x0121 | btd[0] -> false\n{bt_server_data}'
             action_load.configure(text='Reset BebraTech server address', command=serv_sel_tmp)
             main.mainloop()
         elif bt_server_data[1]['answer'] == 'Incorrect password':
@@ -1121,7 +1336,7 @@ if 'run' in sys.argv[0]:
             dump_data_nc()
             printin_load_lbl('Incorrect Password', 'e')
             if debug_mode:
-                load_lbl['text'] += f'\nDebug Info:\njust incorrect password for acc {username}, {bt_server_data}, {password}'
+                load_lbl['text'] += f'\nDebug Info:\njust incorrect password for acc {username}\n{bt_server_data}, {password}'
             main.mainloop()
     except (ConnectionError, IndexError):
         def serv_sel_tmp():
@@ -1133,17 +1348,20 @@ if 'run' in sys.argv[0]:
             load_lbl[
                 'text'] += f'\nDebug Info:\nIncorrect IP in <bt_server> variable.'
         action_load.configure(text='Reset BebraTech server address', command=serv_sel_tmp)
+        pprint(f'[error] Not connected to BebraTech Authentication Server: Server on {bt_server} not found. program loading stopped')
         main.mainloop()
+    pb.tk.plus()
+
     chat = chat_lib.Chat(server.split(':')[0], int(server.split(':')[1]))
     try:
+        pprint('[info] connecting to chat server')
         printin_load_lbl('Connecting to Chat...')
-
         chat.connect()
     except Exception as chat_err:
         def serv_1_sel_tmp():
             select_server('')
             dump_data_nc()
-        print(type(chat_err))
+        pprint(type(chat_err))
         printin_load_lbl(f'Not connected to Chatting Server: Server on {server} not found.', 'e')
         if debug_mode:
             load_lbl[
@@ -1151,17 +1369,21 @@ if 'run' in sys.argv[0]:
         action_load.configure(text='Reset Chatting server address', command=serv_1_sel_tmp)
         main.mainloop()
 
+    pb.tk.plus()
+
     my_message = StringVar()
     send_entry = Entry()
 
     if user_local_settings['USER_SETTINGS']['BTAEML'] == 'True':
         from plugins.core.mod import autoload_objects, get_plugs
-        print('LOAD BTAEML')
+        pprint('[info] BTAEML LOADED')
 
     try:
         _plugin_objects = get_plugs(sys.argv[1])
     except (NameError, FileNotFoundError):
         _plugin_objects = {}
+
+    pb.tk.plus()
 
     exc_chf = SConfig(dat_d['[LOADER_CONFIG]'])
 
@@ -1174,31 +1396,32 @@ if 'run' in sys.argv[0]:
 
 
     try:
-        print('[py][info] loading plugins')
+        pprint('[info] loading plugins')
         autoload_objects(_plugin_objects)
-        print('[py][info] completed')
+        pprint('[info] completed')
     except NameError:
-        print('[py][warning] not detected plugin_api module')
+        pprint('[warning] not detected plugin_api module')
         pass
 
+    pb.tk.plus()
 
     # init theme
+    pprint('[info] init theme')
 
-    if data['USER_SETTINGS']['THEME'] == 'light':
+    if user_local_settings['USER_SETTINGS']['THEME'] == 'light':
         default_fg = 'black'
         main.configure(bg='white')
         main.update()
         default_bg = 'white'
-    elif data['USER_SETTINGS']['THEME'] == 'black':
+    elif user_local_settings['USER_SETTINGS']['THEME'] == 'black':
         default_bg = 'black'
         main.configure(bg='black')
         main.update()
         default_fg = 'white'
     else:
-        theme(data['USER_SETTINGS']['THEME'])
+        theme(user_local_settings['USER_SETTINGS']['THEME'])
 
-    loading = False
-
+    pprint('[info] finishing')
 
     main.protocol("WM_DELETE_WINDOW", shutdown)
 
@@ -1207,10 +1430,14 @@ if 'run' in sys.argv[0]:
         dump_data_nc()
         reload_data_nc()
 
-
-    load_lbl.destroy()
     reinit_window()
 
+    if os.path.exists('./msgr_upd.py'):
+        if open('./msgr.py', 'r').read() != open('./msgr_upd.py', 'r').read():
+            upd = askyesno('Info', locale['update_detected'])
+            if upd:
+                base_conf['RUNT_ACTION'] = 'ON_FINISH_RESTART+LL_F_UPDATE'
+                work = False
 
     for i in sys.argv:
         if 'StartUpAction' in i:
@@ -1220,56 +1447,69 @@ if 'run' in sys.argv[0]:
         chat_window.place(x=0, y=0)
     if not run_f_setup and work and bt_server_data[1] != 'blocked':
         t = {'action_for_chat_server': 'MyUSER', 'username': username}
-        chat.send(f'{t}')
-        if '_show_ip' not in bt_server_data[1]['answer']:
-            auth.update_personal_conf(username, ['_show_ip', 'False'])
-            auth.update_personal_conf(username, ['_admin', 'False'])
-            Debug().relog()
+        try:
+            chat.send(f'{t}')
+        except OSError:
+            pass
+        try:
+            if '_show_ip' not in bt_server_data[1]['answer']:
+                auth.update_personal_conf(username, ['_show_ip', 'False'])
+                auth.update_personal_conf(username, ['_admin', 'False'])
+                Debug().relog()
+        except KeyError:
+            show('Error', 'Not connected 0x0003')
         #threading.Thread(target=account_loop).start()
     main.configure(bg=default_bg)
     main.title(locale['WINDOW_TITLE_TEXT'])
 
     settings_cl = Settings()
     refresh()
-
-    if os.path.exists('./msgr_upd.py'):
-        if open('./msgr.py', 'r').read() != open('./msgr_upd.py', 'r').read():
-            upd = askyesno('Info', locale['update_detected'])
-            if upd:
-                base_conf['RUNT_ACTION'] = 'ON_FINISH_RESTART+LL_F_UPDATE'
-                work = False
-    print('main thread started')
+    reinit_window()
+    reinit_ui()
+    pprint('[info] main thread started')
     if work:
+        pprint('[info] work - true')
         try:
-            threading.Thread(target=chat.async_recv).start()
-            threading.Thread(target=complete_recv).start()
+            threading.Thread(target=chat.async_recv, daemon=True).start()
+            try:
+                pprint('[info] starting crt')
+                complete_recv_thread.start()
+                pprint('[info] started')
+            except RuntimeError:
+                pprint('[error] crt_start ex Runt')
+                pass
+            loading = False
+            reinit_ui()
+            read_all()
+            pprint('[info] READY')
             main.mainloop()
         except Exception as main_thread_ex:
-            print(main_thread_ex)
-            print(traceback.format_exc())
+            pprint(main_thread_ex)
+            pprint(traceback.format_exc())
             main.quit()
             main.destroy()
-    print('stopping program')
-
+    pprint('[info] stopping program')
+    work = False
+    tick_sys.stop = True
     os.system('rmdir __pycache__ /s /q')
 
-    print('shutdown all threads')
+    pprint('[info] shutdown all threads')
     stop_event.set()
     c = 0
     for t in threading.enumerate():
-        print(f'num: {c}')
+        pprint(f'[info] num: {c}')
         c += 1
         if t != threading.current_thread():
             t.join(0)
-    print('disconnecting from servers')
+    pprint('[info] disconnecting from servers')
 
     auth.disconnect()
     chat.shutdown(socket.SHUT_RDWR)
     chat.close()
-    print('backup data.nc and base_data')
+    pprint('[info] backup data.nc and base_data')
 
     dat_d['[SETTINGS]'] = str(user_local_settings)
     json.dump(base_conf, JsonObject(open('./data/base_data.json', 'w')))
     with open('./data/DATA.NC', 'w', encoding='windows-1251') as fl:
         fl.write(encrypt(dat.dump(dat_d), eval(base_conf['CC'])))
-    print('finish')
+    pprint('[info] finish')
