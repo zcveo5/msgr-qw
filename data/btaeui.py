@@ -1,5 +1,6 @@
 import math
 import os.path
+import sys
 from tkinter import TclError
 import tkinter
 from typing import Literal, Union
@@ -125,7 +126,11 @@ class ProgressBar(tkinter.Label):
         if self.percentage < 100:
             self.percentage += math.ceil(v * self._gen_percent())
             self._progress = '|' * self.percentage + '.' * (100 - self.percentage)
-            self['text'] = f'[{self._progress}] {self.percentage}/100'
+            try:
+                if self.winfo_exists():
+                    self['text'] = f'[{self._progress}] {self.percentage}/100'
+            except TclError:
+                pass
         else:
             self['text'] = f'[{self._progress}] Completed'
         self.update()
@@ -136,76 +141,47 @@ class ProgressBar(tkinter.Label):
 
 
 class Button(tkinter.Button):
-    def __init__(self, master=None, style=None, command: CallBack = CallBack(), **kwargs):
-        if style is None:
-            style = ['SystemButtonFace', 'SystemButtonText', 'TkDefaultFont']
-
-        # Обработка шрифта
-        font_config = tuple(style[2].split(':')) if ':' in style[2] else (style[2],)
+    def __init__(self, master=None, command="", **kwargs):
+        if command != "":
+            command = self._wrap_command(command)
 
         # Явный вызов конструктора родителя с правильными аргументами
         super().__init__(
             master=master,
-            command=command.Target,
-            bg=style[0],
-            fg=style[1],
-            font=font_config,
+            command=command,
             **kwargs
         )
+
+    @staticmethod
+    def _wrap_command(cmd):
+        def safe_command():
+            try:
+                cmd()
+            except Exception as e:
+                sys.excepthook(type(e), e, e.__traceback__)
+        return safe_command
 
 
 class Label(tkinter.Label):
-    def __init__(self, master=None, style=None, **kwargs):
-        if style is None:
-            style = ['SystemButtonFace', 'SystemButtonText', 'TkDefaultFont']
-
-        # Обработка шрифта
-        font_config = tuple(style[2].split(':')) if ':' in style[2] else (style[2],)
-
-        # Явный вызов конструктора родителя с правильными аргументами
+    def __init__(self, master=None, **kwargs):
         super().__init__(
             master=master,
-            bg=style[0],
-            fg=style[1],
-            font=font_config,
-            **kwargs
-        )
+            **kwargs)
 
 
 class Text(tkinter.Text):
-    def __init__(self, master=None, style=None, **kwargs):
-        if style is None:
-            style = ['SystemButtonFace', 'SystemButtonText', 'TkDefaultFont']
-
-        # Обработка шрифта
-        font_config = tuple(style[2].split(':')) if ':' in style[2] else (style[2],)
-
-        # Явный вызов конструктора родителя с правильными аргументами
+    def __init__(self, master=None, **kwargs):
         super().__init__(
             master=master,
-            bg=style[0],
-            fg=style[1],
-            font=font_config,
-            **kwargs
-        )
+            **kwargs)
 
 
 class Entry(tkinter.Entry):
-    def __init__(self, master=None, style=None, **kwargs):
-        if style is None:
-            style = ['SystemButtonFace', 'SystemButtonText', 'TkDefaultFont']
-
-        # Обработка шрифта
-        font_config = tuple(style[2].split(':')) if ':' in style[2] else (style[2],)
-
-        # Явный вызов конструктора родителя с правильными аргументами
+    def __init__(self, master=None, **kwargs):
         super().__init__(
             master=master,
-            bg=style[0],
-            fg=style[1],
-            font=font_config,
-            **kwargs
-        )
+            **kwargs)
+
 
 
 POSSIBLE_WIDGETS = [Label, Button, Text, Entry, ProgressBar]
@@ -282,6 +258,9 @@ class SidePanelWidget:
         else:
             self._style = style
         self._font = tuple(self._style[2].split(':'))
+        if len(self._font) == 1:
+            self._font = (self._style[2])
+        print(f'[side {self._title}] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :{self._font} style {style}')
 
     def build(self):
         print_adv(f'[side {self._title}] BUILDING')

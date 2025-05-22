@@ -2,15 +2,15 @@ import hashlib
 import os.path
 import shutil
 import socket
+import sys
 import threading
-import time
-import traceback
 from tkinter import ttk
 from tkinter.messagebox import showinfo as t_showinfo, askyesno, showerror
 from data import btaeui
 from data.btaeui import *
 from plugins.core.mod import *
 import plugins.btac.auth, plugins.btac.chat
+import tkinter as tk
 auth = plugins.btac.auth
 chat_lib = plugins.btac.chat
 work = True
@@ -26,7 +26,7 @@ def pprint(v, *args, **kwargs):
 
 class Settings(btaeui.SidePanel):
     def __init__(self):
-        super().__init__(main, [default_bg, default_fg, f'{font_theme[0]}:{font_theme[1]}'], _side='R', title=locale['settings_mm_butt'])
+        super().__init__(main, [default_bg, default_fg, ':'.join(font_theme)], _side='R', title=locale['settings_mm_butt'])
         self.window_other = None
         self.window_debug = None
         self.d_b = None
@@ -108,7 +108,7 @@ class Settings(btaeui.SidePanel):
             reload_data_nc()
             refresh_locale()
         pprint(self.his)
-        self.window_locale = Tk()
+        self.window_locale = tk.Tk()
         self.window_locale.configure(bg=default_bg)
         self.window_locale.title(locale['setting_sub_f_LOCALE'])
         self.window_locale.resizable(False, False)
@@ -149,7 +149,7 @@ class Settings(btaeui.SidePanel):
                 show('Error', 'TypeError')
             except Exception as pip_ex:
                 show('Error', f'{pip_ex}\n{traceback.format_exc()}')
-        window_prof = Tk()
+        window_prof = tk.Tk()
         window_prof.configure(bg=default_bg)
         window_prof.title(locale['setting_sub_f_PROFILE'])
         window_prof.resizable(False, False)
@@ -169,7 +169,7 @@ class Settings(btaeui.SidePanel):
             base_conf['RUNT_ACTION'] = 'LL_F_Update'
         def upd_ll():
             base_conf['RUNT_ACTION'] = 'LL_Update'
-        self.window_other = Tk()
+        self.window_other = tk.Tk()
         self.window_other.title(locale['setting_sub_f_DEBUG'])
         self.window_other.resizable(False, False)
         self.window_other.geometry(f'300x300+{get_win_pos()}')
@@ -177,6 +177,7 @@ class Settings(btaeui.SidePanel):
         Button(self.window_other, text='LowLevel Update From GitHub repository', command=upd_ll).pack(anchor='nw', padx=3)
         Button(self.window_other, text='LowLvl Update from file', command=upd_ll_ff).pack(anchor='nw', padx=3)
         Button(self.window_other, text='Get Exception', command=lambda: exc()).pack(anchor='nw', padx=3)
+        print(f'======================================== {Button().__class__}')
         Button(self.window_other, text='DebugMenu', command=lambda: Debug().debugtools()).pack(anchor='nw', padx=3)
         Button(self.window_other, text='statistics', command=lambda: threading.Thread(target=Debug().stats, daemon=True).start()).pack(anchor='nw', padx=3)
 
@@ -210,9 +211,9 @@ class Settings(btaeui.SidePanel):
                     else:
                         state_pl['text'] += f'{locale["plg_inst"]}'
             if mods_select.get(mods_select.curselection()) in ['core', 'backup', 'btac', 'Not connected to BebraTech server']:
-                action_butt['state'] = DISABLED
+                action_butt['state'] = tk.DISABLED
             else:
-                action_butt['state'] = NORMAL
+                action_butt['state'] = tk.NORMAL
             plug_metas = {}
             for _plug in os.listdir('./plugins'):
                 plug_metas.update({_plug: json.load(open(f'./plugins/{_plug}/metadata.json'))})
@@ -221,10 +222,10 @@ class Settings(btaeui.SidePanel):
                     disable_butt['text'] = locale['repo_disable_text']
                 else:
                     disable_butt['text'] = locale['repo_enable_text']
-                disable_butt['state'] = NORMAL
+                disable_butt['state'] = tk.NORMAL
                 disable_butt.place(x=580, y=30)
             except KeyError:
-                disable_butt['state'] = DISABLED
+                disable_butt['state'] = tk.DISABLED
                 disable_butt.place_forget()
         def install_mod():
             try:
@@ -262,17 +263,17 @@ class Settings(btaeui.SidePanel):
         def remove_mod():
             nonlocal installed_var
             shutil.rmtree(f'./plugins/{mods_select.get(mods_select.curselection())}', ignore_errors=True)
-            installed_var = Variable(modl_win, os.listdir('./plugins'))
+            installed_var = tk.Variable(modl_win, os.listdir('./plugins'))
         def load_repo():
             mods_select.configure(listvariable=mods_var)
             action_butt.configure(text=locale['plg_install_butt'], command=install_mod)
-            disable_butt['state'] = DISABLED
+            disable_butt['state'] = tk.DISABLED
         def load_installed():
             nonlocal installed_var
-            installed_var = Variable(modl_win, os.listdir('./plugins'))
+            installed_var = tk.Variable(modl_win, os.listdir('./plugins'))
             mods_select.configure(listvariable=installed_var)
             action_butt.configure(text=locale['plg_remove_butt'], command=remove_mod)
-            disable_butt['state'] = NORMAL
+            disable_butt['state'] = tk.NORMAL
         def toggle_mod():
             selected_meta = json.load(open(f'./plugins/{mods_select.get(mods_select.curselection())}/metadata.json', 'r'))
             if selected_meta['state'] == 'True':
@@ -282,7 +283,7 @@ class Settings(btaeui.SidePanel):
                 selected_meta['state'] = 'True'
                 json.dump(selected_meta, JsonObject(open(f'./plugins/{mods_select.get(mods_select.curselection())}/metadata.json', 'w')))
 
-        modl_win = Tk()
+        modl_win = tk.Tk()
         modl_win.title('Plugins Repository')
         modl_win.configure(bg=default_bg)
         raw = []
@@ -301,9 +302,9 @@ class Settings(btaeui.SidePanel):
             return
         Button(modl_win, text=locale['plg_repo_SUB'], command=load_repo, bg=default_bg, fg=default_fg, font=font_theme).place(x=0, y=0)
         Button(modl_win, text=locale['plg_installed_SUB'], command=load_installed, bg=default_bg, fg=default_fg, font=font_theme).place(x=100, y=0)
-        mods_var = Variable(modl_win, modlist)
-        installed_var = Variable(modl_win, os.listdir('./plugins'))
-        mods_select = Listbox(modl_win, width=70, height=30, listvariable=installed_var, bg=default_bg, fg=default_fg, font=font_theme)
+        mods_var = tk.Variable(modl_win, modlist)
+        installed_var = tk.Variable(modl_win, os.listdir('./plugins'))
+        mods_select = tk.Listbox(modl_win, width=70, height=30, listvariable=installed_var, bg=default_bg, fg=default_fg, font=font_theme)
         mods_select.place(x=0, y=30)
         mods_select.bind('<<ListboxSelect>>', get_mod_info)
         action_butt = Button(modl_win, text='', command=install_mod, bg=default_bg, fg=default_fg, font=font_theme)
@@ -312,7 +313,7 @@ class Settings(btaeui.SidePanel):
         state_pl = Label(modl_win, text='', bg=default_bg, fg=default_fg, font=font_theme)
         state_pl.place(x=500, y=60)
         load_installed()
-        name_mod = Label(modl_win, text='', bg=default_bg, fg=default_fg, font=font_theme, justify=LEFT)
+        name_mod = Label(modl_win, text='', bg=default_bg, fg=default_fg, font=font_theme, justify=tk.LEFT)
         name_mod.place(x=500, y=90)
         modl_win.geometry(f'900x500+{get_win_pos()}')
         modl_win.resizable(False, False)
@@ -351,7 +352,7 @@ class Debug:
 
     def debugtools(self):
         def unlock():
-            var = BooleanVar()
+            var = tk.BooleanVar()
             var.set(True)
             use_exec_hook = Button(debugger, text='!exh', command=lambda: self.exc_hook_execute(use_exec_hook, var))
             use_exec_hook.grid(column=0, row=0)
@@ -363,7 +364,7 @@ class Debug:
             Button(debugger, text='info', command=lambda: show('inf', f'ver: {version}\nroute to executable file: {__file__}\nfile name: {__name__}\napp enc: {encoding}')).grid(column=1, row=100)
 
 
-        self.debugger = Tk()
+        self.debugger = tk.Tk()
         debugger = self.debugger
         debugger.title('DEBUGTOOLS')
         debugger.resizable(False, False)
@@ -383,10 +384,10 @@ class Debug:
             else:
                 log_inf.configure(text='log_any_change_in_file:T')
             log_inf_bool = not log_inf_bool
-        win = Tk()
+        win = tk.Tk()
         win.title(f'Statistics t:{threading.enumerate().index(threading.current_thread())}')
         win.resizable(False, False)
-        info = Label(win, text='', justify=LEFT)
+        info = Label(win, text='', justify=tk.LEFT)
         log_inf = Button(win, text='log_any_change_in_file:F', command=toggle_log_infile)
         log_inf.pack(anchor='nw')
         info.pack(anchor='nw')
@@ -396,7 +397,7 @@ class Debug:
                 info.configure(text=f'===EXEC_F_INF===\nlng:{lng}\ntheme:{user_local_settings["USER_SETTINGS"]["THEME"]}\nstats_thread_id:{threading.enumerate().index(threading.current_thread())}\nchat_lib.online_list:{chat_lib.online_list}'
                                     f'\ntype-onl-list:{type(chat_lib.online_list)}\ntype-msgs:{type(chat_lib.msgs)}\nmain_winfo:{main.winfo_exists()}\nonline_listbox_winfo:{online_listbox.winfo_exists()}\n'
                                     f'setts_class:{Settings}\nflog_exists:{os.path.exists("./data/logs/stats_infile_log.log")}\n'
-                                    f'chat_lib_private:{chat_lib.private_msgs}\nunreads:{unread}\nreaded:{read_msgs}\nchat:{chat_selected}\norig_chat_List{orig_chat_list}\n'
+                                    f'chat_lib_private:{chat_lib.private_msgs}\nunread:{unread}\nread:{read_msgs}\nchat:{chat_selected}\norig_chat_List{orig_chat_list}\n'
                                     f'===P_LOG_INF===\nmain_sys.stdout:{sys.stdout.__class__}\nmain_sys.stdout_output_file:{sys.stdout.name}\n'
                                     f'===MSGS_INF===\n')
                 if log_inf_bool and last_inf != info['text']:
@@ -416,17 +417,17 @@ class Debug:
     def plug_create():
         def compile_plug():
             metadata = {'name': name_plug.get(), 'file': 'mod', 'class': class_plug.get(), 'state': 'True'}
-            raw_code = code.get("0.0", END)
+            raw_code = code.get("0.0", tk.END)
 
             code_v = f"#Start\n{raw_code.replace('    ', '%TAB').replace('	', '%TAB')}\n#End"
             dist = {'meta': str(metadata), 'code': code_v}
 
             conf = SNConfig('').dump(dist).replace('\n', '&@')
-            code.insert(END, f'\n\nResult:\n{conf}')
+            code.insert(tk.END, f'\n\nResult:\n{conf}')
 
         def upload_plug():
             metadata = {'name': name_plug.get(), 'file': 'mod', 'class': class_plug.get(), 'state': 'True'}
-            raw_code = code.get("0.0", END)
+            raw_code = code.get("0.0", tk.END)
 
             code_v = f"#Start\n{raw_code.replace('    ', '%TAB').replace('	', '%TAB')}\n#End"
             dist = {'meta': str(metadata), 'code': code_v}
@@ -447,16 +448,16 @@ class Debug:
             meta = f'./plugins/{path}/metadata.json'
             meta_decoded = json.load(open(meta, 'r'))
             code_path = f"./plugins/{path}/{meta_decoded['file']}.py"
-            code.delete("0.0", END)
+            code.delete("0.0", tk.END)
             code.insert("0.0", open(code_path, 'r', encoding='windows-1251').read())
-            name_plug.delete("0", END)
-            class_plug.delete("0", END)
+            name_plug.delete("0", tk.END)
+            class_plug.delete("0", tk.END)
             name_plug.insert("0", meta_decoded['name'])
             class_plug.insert("0", meta_decoded['class'])
 
         def save_plug():
             conf = SNConfig('').dump(
-                {'code': code.get("0.0", END), 'class': class_plug.get(), 'name': name_plug.get()}).replace('\n',
+                {'code': code.get("0.0", tk.END), 'class': class_plug.get(), 'name': name_plug.get()}).replace('\n',
                                                                                                             '&@').replace(
                 '    ', '%TAB').replace('	', '%TAB')
             try:
@@ -468,17 +469,17 @@ class Debug:
             open(f'./plugins/backup/{name_plug.get()}.plug', 'w').write(conf)
 
         def open_plug():
-            code.delete("0.0", END)
-            class_plug.delete("0", END)
+            code.delete("0.0", tk.END)
+            class_plug.delete("0", tk.END)
             plug = open(f'./plugins/backup/{name_plug.get()}.plug').read().replace('&@', '\n').replace('%TAB', '    ')
-            name_plug.delete("0", END)
+            name_plug.delete("0", tk.END)
             conf_plug = SNConfig(plug).load()
             pprint(conf_plug)
             code.insert("0.0", conf_plug['code'])
             name_plug.insert("0", conf_plug['name'])
             class_plug.insert("0", conf_plug['class'])
 
-        win = Tk()
+        win = tk.Tk()
         win.title('Plugin Create')
         win.resizable(False, False)
         name_plug = Entry(win)
@@ -499,17 +500,17 @@ class Debug:
     def data_nc_editor():
         def save():
             with open('./data/DATA.NC', 'w', encoding='windows-1251') as nc_file:
-                nc_file.write(encrypt(txt.get("0.0", END), eval(cc)))
+                nc_file.write(encrypt(txt.get("0.0", tk.END), eval(cc)))
             reload_data_nc()
             dump_data_nc()
 
         def load_data_nc():
-            txt.delete("0.0", END)
+            txt.delete("0.0", tk.END)
             txt.insert("0.0", decrypt(open('./data/DATA.NC', 'r').read(), eval(cc)))
 
         try:
             cc = base_conf['CC']
-            editor_win = Tk()
+            editor_win = tk.Tk()
             txt = Text(editor_win)
             txt.grid(column=0, row=0, columnspan=2)
             Button(editor_win, text='Save', command=save).grid(column=0, row=1)
@@ -573,7 +574,7 @@ class Debug:
         main.configure(bg=default_bg)
 
     def custom_req(self):
-        auth.raw_request(eval(self.cmd.get("0.0", END).replace('\n', '')))
+        auth.raw_request(eval(self.cmd.get("0.0", tk.END).replace('\n', '')))
 
     @staticmethod
     def tk_settings():
@@ -581,7 +582,7 @@ class Debug:
         def conf(sc, dpi):
             user_local_settings['USER_SETTINGS']['SCREEN_SETTINGS'] = [float(sc), int(dpi)]
 
-        tk_setts = Tk()
+        tk_setts = tk.Tk()
         tk_setts.resizable(False, False)
         Label(tk_setts, text='This settings may break msgr. Be accurate').grid(column=0, row=0, columnspan=2)
         tk_scale = Entry(tk_setts)
@@ -645,10 +646,20 @@ def plugin_info():
 
 def show(title, text, ret_win=False, custom_close=None):
     global last_obj_id
+    class _TkM(tk.Tk):
+        def __init__(self, **kwargs):
+            self.looped_btae = False
+            super().__init__(**kwargs)
+
+        def mainloop(self, n = 0):
+            self.looped_btae = True
+            super().mainloop(n)
     obj_id = f'{text}{text}{ret_win}{custom_close}'
-    info = Tk()
+    info = _TkM()
     def exit_mb():
         nonlocal info
+        if info.looped_btae:
+            info.quit()
         info.destroy()
         info = None
         if custom_close is not None:
@@ -666,7 +677,7 @@ def show(title, text, ret_win=False, custom_close=None):
         info.configure(bg=bg)
     info.resizable(False, False)
     info.attributes('-topmost', True)
-    Label(info, text=text, bg=bg, fg=fg, font=fnt, justify=LEFT).pack(anchor='center', pady=30, ipadx=10)
+    Label(info, text=text, bg=bg, fg=fg, font=fnt, justify=tk.LEFT).pack(anchor='center', pady=30, ipadx=10)
     Button(info, text='OK', bg=bg, fg=fg, font=fnt, command=exit_mb).pack(anchor='se', side='bottom', expand=True, ipadx=10, ipady=5)
     if last_obj_id == '':
         last_obj_id = obj_id
@@ -692,6 +703,7 @@ def theme(file2, ret=False):
     font_theme = theme_[2]
     default_fg = theme_[1]
     default_bg = theme_[0]
+    print(f'p[msgr _______________________________________________________ IMPORENTANT FONT INFO OFOOFOF ____> ---> {theme_} {font_theme}')
     user_local_settings['USER_SETTINGS']['THEME'] = file2.replace('.theme', '')
     settings_cl = Settings()
     if not loading:
@@ -803,7 +815,7 @@ def send_message(event=None, is_private=False, **kw):
     except OSError:
         showerror('Error', 'SOCK_DISCONNECTED')
         to_send['text'] += ' (!) SOCK_DISCONNECTED'
-    send_entry.delete("0", END)
+    send_entry.delete("0", tk.END)
 
 
 def load_chat(event):
@@ -849,8 +861,8 @@ def reinit_ui(no_reinit_theme=False):
     if not loading:
         chat.send({'action_for_chat_server': 'OnlineList'})
 
-    var = Variable(main, value=chat_lib.online_list)
-    online_listbox = Listbox(height=18, width=17, bg=default_bg, fg=default_fg, font=font_theme,
+    var = tk.Variable(main, value=chat_lib.online_list)
+    online_listbox = tk.Listbox(height=18, width=17, bg=default_bg, fg=default_fg, font=font_theme,
                           listvariable=var)
     online_listbox.place(x=777, y=35)
 
@@ -858,12 +870,12 @@ def reinit_ui(no_reinit_theme=False):
     if 'chat_select' in main.his:
         main.his['chat_select'].destroy()
         main.his.pop('chat_select')
-    chat_select_listbox = main.create('chat_select', Listbox, width=110, height=30, bg=default_bg, fg=default_fg).tk
+    chat_select_listbox = main.create('chat_select', tk.Listbox, width=110, height=30, bg=default_bg, fg=default_fg).tk
     if chat_select_menu:
         pprint(['[info] ===================== LOADING CHAT SELECT'])
-        chat_select_listbox.insert(END, 'General')
+        chat_select_listbox.insert(tk.END, 'General')
         for chat_name in chat_lib.private_msgs.keys():
-            chat_select_listbox.insert(END, chat_name)
+            chat_select_listbox.insert(tk.END, chat_name)
             if chat_name not in orig_chat_list:
                 orig_chat_list.append(chat_name)
         chat_select_listbox.place(x=0, y=0)
@@ -931,7 +943,7 @@ def prog_credits():
 
 
 def create_custom_theme():
-    theme_create = Tk()
+    theme_create = tk.Tk()
     theme_create.configure(bg=default_bg)
     theme_create.resizable(False, False)
     theme_create.title(locale['cct_title'])
@@ -991,9 +1003,9 @@ def complete_recv():
 
 def update_online_list(online_list):
     try:
-        online_listbox.delete(0, END)  # Очистить текущий список
+        online_listbox.delete(0, tk.END)  # Очистить текущий список
         for _user in online_list:
-            online_listbox.insert(END, _user)  # Добавить новых пользователей
+            online_listbox.insert(tk.END, _user)  # Добавить новых пользователей
     except Exception as _ex:
         pprint(_ex)
         pprint(traceback.format_exc())
@@ -1001,15 +1013,15 @@ def update_online_list(online_list):
 
 def chat_win_ref(to):
     if chat_selected == 'General':
-        chat_window.delete("0.0", END)
+        chat_window.delete("0.0", tk.END)
         for msg in '\n'.join(to):
             if 'PRIVATE: ' not in msg:
-                chat_window.insert(END, msg)
+                chat_window.insert(tk.END, msg)
 
 
 def chat_win_private_ref(to):
         try:
-            main.his['chat_window_private'].tk.delete("0.0", END)
+            main.his['chat_window_private'].tk.delete("0.0", tk.END)
             main.his['chat_window_private'].tk.insert("0.0", '\n'.join(to))
         except (KeyError, TclError):
             pass
@@ -1052,18 +1064,18 @@ def reload_data_nc():
 
 def send_private():
     def _send():
-        send_entry.delete("0", END)
-        send_entry.insert(END, msg.get())
+        send_entry.delete("0", tk.END)
+        send_entry.insert(tk.END, msg.get())
         send_message(None, True, private_addr=to_cl.get())
-    win = Tk()
+    win = tk.Tk()
     win.title('Private MSG Sender')
-    Label(win, text='Private MSG Sender\n--------------------', font=('Consolas', 12), justify=LEFT).pack(anchor='w')
+    Label(win, text='Private MSG Sender\n--------------------', font=('Consolas', 12), justify=tk.LEFT).pack(anchor='w')
     to_cl = Entry(win)
     to_cl.pack(anchor='w')
     msg = Entry(win)
     msg.pack(anchor='w')
-    to_cl.insert(END, 'receiver username')
-    msg.insert(END, 'message')
+    to_cl.insert(tk.END, 'receiver username')
+    msg.insert(tk.END, 'message')
     Button(win, text='Send', command=_send).pack(anchor='w')
     win.resizable(False, False)
     win.geometry('300x300')
@@ -1075,13 +1087,13 @@ def change_username(a):
 
 
 def update_chat_list(this):
-    main.his['chat_select'].tk.delete("0", END)
-    main.his['chat_select'].tk.insert(END, f'General ({this})')
+    main.his['chat_select'].tk.delete("0", tk.END)
+    main.his['chat_select'].tk.insert(tk.END, f'General ({this})')
     for chat_name in chat_lib.private_msgs.keys():
-        main.his['chat_select'].tk.insert(END, chat_name + f' ({unread[chat_name]})')
+        main.his['chat_select'].tk.insert(tk.END, chat_name + f' ({unread[chat_name]})')
 
 
-if 'run' in sys.argv[0]:
+if 'launcher' in sys.argv[0]:
     pprint(' MSGR QW BY BEBRA TECH (C) 2023 - 2025')
     tick_sys = TickSys()
     threading.Thread(target=tick_sys.start_tick, daemon=True).start()
@@ -1095,6 +1107,11 @@ if 'run' in sys.argv[0]:
     read_msgs = {}
     orig_chat_list = ['General']
     complete_recv_thread = threading.Thread(target=complete_recv, daemon=True)
+
+    for i in sys.argv:
+        if 'RunBeforeWin' in i:
+            exec(repr(i.split('$=%')[1])[1:-1].replace(r' $$N ', '\n'))
+
     main = Win()
     main.geometry([900, 500])
     main.resizable(False, False)
@@ -1104,7 +1121,7 @@ if 'run' in sys.argv[0]:
     main.configure(bg='black')
 
     load_lbl = main.create('load_lbl', Label, text='Loading...', bg='black', fg='white',
-                     font=('Consolas', 9), justify=LEFT)
+                     font=('Consolas', 9), justify=tk.LEFT)
     load_lbl.build('place', x=0, y=0)
 
     pb = main.create('loading_pb', ProgressBar, len_to_count=11, bg='black', fg='white', font=('Consolas', 9))
@@ -1146,7 +1163,7 @@ if 'run' in sys.argv[0]:
     files = ['./data/DATA.NC']
     base_conf = json.load(open('./data/base_data.json', 'r'))
     other_cl = Other()
-    online_listbox = Listbox()
+    online_listbox = tk.Listbox()
 
     pprint('[info] inited vars and ui-elements')
 
@@ -1189,7 +1206,7 @@ if 'run' in sys.argv[0]:
 
     for i in sys.argv:
         if 'BootUpAction' in i:
-            exec(i.split('$=%')[1])
+            exec(i.split('$=%')[1].replace(r'\n', '\n'))
 
     pprint('[info] init theme')
     if user_local_settings['USER_SETTINGS']['THEME'] == 'light':
@@ -1231,7 +1248,7 @@ if 'run' in sys.argv[0]:
 
     if eval(dat_d['[SETTINGS]'])['USER_SETTINGS']['FIRST_BOOT'] == 'True':
         pprint('[info] first boot, upa')
-        policy_win = Tk()
+        policy_win = tk.Tk()
         policy_win.title('User Policy Agreement')
         Label(policy_win, text='Please agree with user policy', font=('Consolas', 10)).pack()
         Button(policy_win, text='BebraTech Agreement (Credits)', command=prog_credits, font=('Consolas', 10)).pack()
@@ -1255,7 +1272,7 @@ if 'run' in sys.argv[0]:
             reload_data_nc()
             server_select_win.quit()
             server_select_win.destroy()
-        server_select_win = Tk()
+        server_select_win = tk.Tk()
         server_select_win.title(locale['server_select_win'])
         server_select_win.resizable(False, False)
         Label(server_select_win, text=locale['servers_setup_title']).pack()
@@ -1291,7 +1308,7 @@ if 'run' in sys.argv[0]:
             reload_data_nc()
             win.quit()
 
-        login_win = Tk()
+        login_win = tk.Tk()
         login_win.title(locale['login_txt'])
         login_win.resizable(False, False)
         Label(login_win, text=locale['login_hint']).pack()
@@ -1371,11 +1388,11 @@ if 'run' in sys.argv[0]:
 
     pb.tk.plus()
 
-    my_message = StringVar()
+    my_message = tk.StringVar()
     send_entry = Entry()
 
     if user_local_settings['USER_SETTINGS']['BTAEML'] == 'True':
-        from plugins.core.mod import autoload_objects, get_plugs
+        from plugins.core.mod import exec_plugs, get_plugs
         pprint('[info] BTAEML LOADED')
 
     try:
@@ -1397,7 +1414,7 @@ if 'run' in sys.argv[0]:
 
     try:
         pprint('[info] loading plugins')
-        autoload_objects(_plugin_objects)
+        exec_plugs(_plugin_objects)
         pprint('[info] completed')
     except NameError:
         pprint('[warning] not detected plugin_api module')
@@ -1482,7 +1499,10 @@ if 'run' in sys.argv[0]:
             reinit_ui()
             read_all()
             pprint('[info] READY')
-            main.mainloop()
+            try:
+                main.mainloop()
+            except KeyboardInterrupt:
+                exit()
         except Exception as main_thread_ex:
             pprint(main_thread_ex)
             pprint(traceback.format_exc())
@@ -1513,3 +1533,5 @@ if 'run' in sys.argv[0]:
     with open('./data/DATA.NC', 'w', encoding='windows-1251') as fl:
         fl.write(encrypt(dat.dump(dat_d), eval(base_conf['CC'])))
     pprint('[info] finish')
+else:
+    showerror('Error', 'License Error, Please run with launcher')

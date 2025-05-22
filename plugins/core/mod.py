@@ -9,7 +9,7 @@ import traceback
 from tkinter.messagebox import showinfo
 import _tkinter
 import sys
-from tkinter import *
+import tkinter
 import random
 import json
 import os
@@ -24,6 +24,7 @@ except FileNotFoundError:
 
 def print_adv(v):
     print(f'[core.py]{v}')
+    open('./data/logs/core.log', 'a', errors='replace').write(f'[core.py]{v}\n')
 
 app = None
 class CorePlugin:
@@ -70,15 +71,12 @@ def load(theme_load, def_bg=None, def_fg=None, def_font=None):
         def_fg = theme['secondary_color']
     if def_font is not None:
         tmp = theme['font'].split()
-        if theme['font'] == 'None':
-            def_font = (None, 9)
+        if len(tmp) == 1:
+            def_font = list()
+            def_font.append(tmp[0])
+            def_font = tuple(def_font)
         else:
-            try:
-                def_font = (tmp[0], int(tmp[len(tmp) - 1]))
-            except IndexError:
-                def_font = ''
-            except ValueError:
-                def_font = tmp[0]
+            def_font = (tmp[0], tmp[1])
     return def_bg, def_fg, def_font
 
 
@@ -202,20 +200,20 @@ def decrypt(data, salt):
 def get_win(exc_with_traceback='No-Information-Provided',
             program_title='No-Information-Provided'):
     try:
-        rep = Tk()
+        rep = tkinter.Tk()
     except _tkinter.TclError:
             print_adv('[FATAL_ERROR] Invalid TCL configuration')
             print_adv(traceback.format_exc())
             return
     rep.title('Error')
     rep.resizable(False, False)
-    Label(rep, text=f'Program {program_title} has been crashed.\n\n\n'
-                    f'{exc_with_traceback}', justify=LEFT).pack()
-    Button(rep, text='Exit', command=sys.exit).pack(anchor='w')
+    tkinter.Label(rep, text=f'Program {program_title} has been crashed.\n\n\n'
+                    f'{exc_with_traceback}', justify=tkinter.LEFT).pack()
+    tkinter.Button(rep, text='Exit', command=sys.exit).pack(anchor='w')
     rep.mainloop()
 
 
-def autoload_objects(_plugs):
+def exec_plugs(_plugs):
     for key, value in _plugs.items():
         cur_mod = key
         try:
@@ -257,7 +255,6 @@ def get_plugs(main_module):
         except AttributeError as preload_ex:
             print_adv(f'[plug_api][error] invalid plugin_MainThread {key}. details: {preload_ex}')
     print_adv('[plug_api][info] completed')
-    print_adv(compiled_plugins)
     return compiled_plugins
 
 
@@ -279,7 +276,7 @@ class Config:
         self.config_w = open(self.title, 'a')
 
     def _get_items(self):
-        """WARNING!!! THIS METHOD IS BROKEN! USE self.dct OR __getitem__"""
+        self.config_r.seek(0)
         cnf = {}
         for elem in self.config_r.read().split('\n'):
             if len(elem.split(':')) == 2:
@@ -326,7 +323,7 @@ class FirstSetup:
         global work
         work = True
 
-        win = Tk()
+        win = tkinter.Tk()
         def ini1():
 
             def ex():
@@ -362,28 +359,28 @@ class FirstSetup:
             win.title(self.locale['fs_title'])
             win.geometry('300x200')
             win.resizable(False, False)
-            lb1 = Label(win, text=self.locale['fs_locale'], bg=self.bg, fg=self.fg, font=self.fnt)
+            lb1 = tkinter.Label(win, text=self.locale['fs_locale'], bg=self.bg, fg=self.fg, font=self.fnt)
             lb1.pack()
             sel_lc = Combobox(win, values=os.listdir('./data/locale'), state="readonly", font=self.fnt)
             sel_lc.pack()
             sel_lc.bind("<<ComboboxSelected>>", locale_help)
-            lb2 = Label(win, text=self.locale['fs_theme'], bg=self.bg, fg=self.fg, font=self.fnt)
+            lb2 = tkinter.Label(win, text=self.locale['fs_theme'], bg=self.bg, fg=self.fg, font=self.fnt)
             lb2.pack()
             sel_th = Combobox(win, values=os.listdir('./data/theme'), state="readonly", font=self.fnt)
             sel_th.pack()
             sel_th.bind("<<ComboboxSelected>>", theme_help)
-            c = Button(win, text=self.locale['fs_continue'], bg=self.bg, fg=self.fg, font=self.fnt, command=ex)
+            c = tkinter.Button(win, text=self.locale['fs_continue'], bg=self.bg, fg=self.fg, font=self.fnt, command=ex)
             c.pack()
 
         ini1()
         while work:
             try:
                 win.update()
-            except TclError:
+            except tkinter.TclError:
                 break
             time.sleep(0.01)
         else:
             try:
                 win.destroy()
-            except TclError:
+            except tkinter.TclError:
                 pass
