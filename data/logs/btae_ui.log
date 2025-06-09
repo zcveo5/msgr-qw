@@ -1,9 +1,9 @@
-[btaeui.py][win MsgrQW - Loading] creating widget load_lbl
-[btaeui.py][load_lbl] builded place
-[btaeui.py][win MsgrQW - Loading] creating widget loading_pb
-[btaeui.py][loading_pb] builded place
-[btaeui.py][win MsgrQW - Loading] creating widget exit_button
-[btaeui.py][exit_button] builded place
-[btaeui.py][win MsgrQW - Loading] creating widget action_load
-[btaeui.py][action_load] builded place
+[btaeui.py][win MSGR QW - Loading] creating widget load_lbl
+[btaeui.py][load_lbl] build place {'x': 0, 'y': 0} {'widgetName': 'label', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x000001D12C99F1B0>, '_name': '!label', '_w': '.!label', 'children': {}, '_tclCommands': []}
+[btaeui.py][win MSGR QW - Loading] creating widget loading_pb
+[btaeui.py][loading_pb] build place {'x': 450, 'y': 490, 'anchor': 'center'} {'widgetName': 'label', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x000001D12C99F1B0>, '_name': '!progressbar', '_w': '.!progressbar', 'children': {}, '_tclCommands': [], 'percentage': 0, '_ltc': 11, '_progress': '....................................................................................................'}
+[btaeui.py][win MSGR QW - Loading] creating widget exit_button
+[btaeui.py][exit_button] build place {'x': 850, 'y': 450} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x000001D12C99F1B0>, '_name': '!button', '_w': '.!button', 'children': {}, '_tclCommands': ['1997818636480safe_command']}
+[btaeui.py][win MSGR QW - Loading] creating widget action_load
+[btaeui.py][action_load] build place {'x': 10, 'y': 450} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x000001D12C99F1B0>, '_name': '!button2', '_w': '.!button2', 'children': {}, '_tclCommands': []}
 [btaeui.py][side nastroyki] p recreating loaded

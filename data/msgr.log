@@ -1,22 +1,26 @@
 [STDOUT] ~ LOG STARTED ~
 [STDOUT][loader][info] launcher&exception hook v.0
-[STDOUT][loader][info] win release 11
+[STDOUT][loader][info] win release 10
 [STDOUT] - ~ * PROGRAM * ~ - 
-[STDOUT][msgr.py] MSGR QW BY BEBRA TECH (C) 2023 - 2025
+[STDOUT][msgr.py]MSGR QW BY BEBRA TECH (C) 2023 - 2025
 [STDOUT][msgr.py][info] init window and vars
-[STDOUT][btaeui.py][win MsgrQW - Loading] creating widget load_lbl
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget load_lbl
+[STDOUT][win MSGR QW - Loading][load_lbl] {'text': 'Loading...', 'bg': 'black', 'fg': 'white', 'font': ('Consolas', 9), 'justify': 'left'} <class 'data.btaeui.Label'>
 [STDOUT][btaeui.py][advlog][load_lbl] IS DESTROY : False CALLED build
-[STDOUT][btaeui.py][load_lbl] builded place
-[STDOUT][btaeui.py][win MsgrQW - Loading] creating widget loading_pb
+[STDOUT][btaeui.py][load_lbl] build place {'x': 0, 'y': 0} {'widgetName': 'label', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x000001D12C99F1B0>, '_name': '!label', '_w': '.!label', 'children': {}, '_tclCommands': []}
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget loading_pb
+[STDOUT][win MSGR QW - Loading][loading_pb] {'len_to_count': 11, 'bg': 'black', 'fg': 'white', 'font': ('Consolas', 9)} <class 'data.btaeui.ProgressBar'>
 [STDOUT][btaeui.py][advlog][loading_pb] IS DESTROY : False CALLED build
-[STDOUT][btaeui.py][loading_pb] builded place
+[STDOUT][btaeui.py][loading_pb] build place {'x': 450, 'y': 490, 'anchor': 'center'} {'widgetName': 'label', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x000001D12C99F1B0>, '_name': '!progressbar', '_w': '.!progressbar', 'children': {}, '_tclCommands': [], 'percentage': 0, '_ltc': 11, '_progress': '....................................................................................................'}
 [STDOUT][msgr.py][info] created loading screen
-[STDOUT][btaeui.py][win MsgrQW - Loading] creating widget exit_button
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget exit_button
+[STDOUT][win MSGR QW - Loading][exit_button] {'text': 'Exit', 'bg': 'black', 'fg': 'white', 'font': ('Consolas', 9), 'command': <built-in function exit>} <class 'data.btaeui.Button'>
 [STDOUT][btaeui.py][advlog][exit_button] IS DESTROY : False CALLED build
-[STDOUT][btaeui.py][exit_button] builded place
-[STDOUT][btaeui.py][win MsgrQW - Loading] creating widget action_load
+[STDOUT][btaeui.py][exit_button] build place {'x': 850, 'y': 450} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x000001D12C99F1B0>, '_name': '!button', '_w': '.!button', 'children': {}, '_tclCommands': ['1997818636480safe_command']}
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget action_load
+[STDOUT][win MSGR QW - Loading][action_load] {'text': 'No action', 'bg': 'black', 'fg': 'white', 'font': ('Consolas', 9)} <class 'data.btaeui.Button'>
 [STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED build
-[STDOUT][btaeui.py][action_load] builded place
+[STDOUT][btaeui.py][action_load] build place {'x': 10, 'y': 450} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x000001D12C99F1B0>, '_name': '!button2', '_w': '.!button2', 'children': {}, '_tclCommands': []}
 [STDOUT][msgr.py][info] created loading_screen buttons
 [STDOUT][msgr.py][info] inited vars and ui-elements
 [STDOUT][msgr.py][info] loading data.nc
@@ -27,6 +31,7 @@
 [STDOUT][msgr.py][info] language ru
 [STDOUT][msgr.py][info] init theme
 [STDOUT][msgr.py][info] loading theme hh
+[STDOUT][side nastroyki] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
 [STDOUT][btaeui.py][side nastroyki] p recreating loaded
 [STDOUT][btaeui.py][advlog][load_lbl] IS DESTROY : False CALLED configure
 [STDOUT][btaeui.py][advlog][exit_button] IS DESTROY : False CALLED configure
@@ -39,4 +44,4 @@
 [STDOUT][msgr.py][info] connecting to servers
 [STDOUT][msgr.py][info] connecting to account server
 [STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED configure
-[STDOUT][msgr.py][error] Not connected to BebraTech Authentication Server: Server on 192.168.88.24:8176 not found. program loading stopped
+[STDOUT][msgr.py][error] Not connected to BebraTech Authentication Server: Server on 127.0.0.1:1212 not found. program loading stopped

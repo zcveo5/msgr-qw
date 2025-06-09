@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter.messagebox import showinfo as t_showinfo, askyesno, showerror
 from data import btaeui
 from data.btaeui import *
+from data.utils import SpyDict
 from plugins.core.mod import *
 import plugins.btac.auth, plugins.btac.chat
 import tkinter as tk
@@ -177,7 +178,7 @@ class Settings(btaeui.SidePanel):
         Button(self.window_other, text='LowLevel Update From GitHub repository', command=upd_ll).pack(anchor='nw', padx=3)
         Button(self.window_other, text='LowLvl Update from file', command=upd_ll_ff).pack(anchor='nw', padx=3)
         Button(self.window_other, text='Get Exception', command=lambda: exc()).pack(anchor='nw', padx=3)
-        print(f'======================================== {Button().__class__}')
+        Button(self.window_other, text='Get Exception', command=lambda: exc()).pack(anchor='nw', padx=3)
         Button(self.window_other, text='DebugMenu', command=lambda: Debug().debugtools()).pack(anchor='nw', padx=3)
         Button(self.window_other, text='statistics', command=lambda: threading.Thread(target=Debug().stats, daemon=True).start()).pack(anchor='nw', padx=3)
 
@@ -338,7 +339,6 @@ class TickSys:
             except KeyboardInterrupt:
                 break
             except Exception as _tick_thread_ex:
-                print(_tick_thread_ex)
                 return
         else:
             return
@@ -359,6 +359,7 @@ class Debug:
             Button(debugger, text='data.nc editor', command=self.data_nc_editor).grid(column=1, row=1)
             Button(debugger, text='plugin create', command=self.plug_create).grid(column=1, row=2)
             Button(debugger, text='tk_settings', command=self.tk_settings).grid(column=1, row=3)
+            Button(debugger, text='globals explorer', command=self.globals_explorer).grid(column=1, row=4)
 
             Button(debugger, text='EXECUTE', command=lambda: self.execute(self.cmd.get("0.0", "end"), var.get())).grid(column=1, row=99)
             Button(debugger, text='info', command=lambda: show('inf', f'ver: {version}\nroute to executable file: {__file__}\nfile name: {__name__}\napp enc: {encoding}')).grid(column=1, row=100)
@@ -395,11 +396,11 @@ class Debug:
         while not stop_event.is_set():
             try:
                 info.configure(text=f'===EXEC_F_INF===\nlng:{lng}\ntheme:{user_local_settings["USER_SETTINGS"]["THEME"]}\nstats_thread_id:{threading.enumerate().index(threading.current_thread())}\nchat_lib.online_list:{chat_lib.online_list}'
-                                    f'\ntype-onl-list:{type(chat_lib.online_list)}\ntype-msgs:{type(chat_lib.msgs)}\nmain_winfo:{main.winfo_exists()}\nonline_listbox_winfo:{online_listbox.winfo_exists()}\n'
+                                    f'\ntype-onl-list:{type(chat_lib.online_list)}\ntype-msgs:{type(chat_lib.msgs())}\nmain_winfo:{main.winfo_exists()}\nonline_listbox_winfo:{online_listbox.winfo_exists()}\n'
                                     f'setts_class:{Settings}\nflog_exists:{os.path.exists("./data/logs/stats_infile_log.log")}\n'
-                                    f'chat_lib_private:{chat_lib.private_msgs}\nunread:{unread}\nread:{read_msgs}\nchat:{chat_selected}\norig_chat_List{orig_chat_list}\n'
+                                    f'chat_lib_private:{chat_lib.private_msgs()}\nunread:{unread}\nread:{read}\nchat:{chat_selected}\norig_chat_List{orig_chat_list}\nscrolled:{scrolled}\n'
                                     f'===P_LOG_INF===\nmain_sys.stdout:{sys.stdout.__class__}\nmain_sys.stdout_output_file:{sys.stdout.name}\n'
-                                    f'===MSGS_INF===\n')
+                                    f'===MSGS_INF===\nread[gen]\nCANT BE:\nchat_lib._msgs\nchat_lib.loaded_msgs:\n\n{id(read["General"])}\n{id(chat_lib.loaded_msgs)}\n{id(chat_lib._msgs)}\nif not 0, all ok: {(id(read["General"]) - id(chat_lib._msgs)) - (id(read["General"]) - id(chat_lib.loaded_msgs))}')
                 if log_inf_bool and last_inf != info['text']:
                     with open('./data/logs/stats_infile_log.log', 'a') as f_l:
                         try:
@@ -530,20 +531,19 @@ class Debug:
     def execute(code, use_exc_hook=False):
         if use_exc_hook:
             code_ = (f""
-                     f"def pp(v):\n"
-                     f"   cmd.insert(END, v)\n"
+                     f"def pp(v='Not provided'):\n"
+                     f"   show('Print', v, ret_win=True).mainloop()\n"
                      f"print = pp\n"
                      f"{code.replace('	', '    ')}\n")
         else:
             code_ = code
+        def exec__():
+            try:
+                exec(code_, globals(), locals())
+            except Exception as ex:
+                pprint(f'ex {ex}')
 
-            def exec__():
-                try:
-                    exec(code_, globals().update({'cmd': ''}), locals())
-                except Exception as ex:
-                    pprint(f'ex {ex}')
-
-            threading.Thread(target=exec__, daemon=True).start()
+        exec__()
     @staticmethod
     def relog():
         global bt_server_data
@@ -593,6 +593,18 @@ class Debug:
         tk_dpi_mode.grid(column=1, row=2)
         Button(tk_setts, text='Confirm', command=lambda: conf(tk_scale.get(), tk_dpi_mode.get())).grid(column=0, row=3, columnspan=2)
         Button(tk_setts, text='Optimize for win11', command=lambda: conf(1.4, 1)).grid(column=0, row=4, columnspan=2)
+
+
+    @staticmethod
+    def globals_explorer():
+        glb_exp = tk.Tk()
+        glb = tk.Listbox(glb_exp, height=20, width=100)
+        for _i in globals().items():
+            if '__' not in _i[0]:
+                if 'module' not in str(_i[1]):
+                    glb.insert(tk.END, f'{_i[0]} = {_i[1]}')
+        glb.pack()
+        glb_exp.resizable(False, False)
 
 
 def get_win_pos():
@@ -645,16 +657,14 @@ def plugin_info():
 
 
 def show(title, text, ret_win=False, custom_close=None):
-    global last_obj_id
     class _TkM(tk.Tk):
-        def __init__(self, **kwargs):
+        def __init__(self):
             self.looped_btae = False
-            super().__init__(**kwargs)
+            super().__init__()
 
         def mainloop(self, n = 0):
             self.looped_btae = True
             super().mainloop(n)
-    obj_id = f'{text}{text}{ret_win}{custom_close}'
     info = _TkM()
     def exit_mb():
         nonlocal info
@@ -679,8 +689,6 @@ def show(title, text, ret_win=False, custom_close=None):
     info.attributes('-topmost', True)
     Label(info, text=text, bg=bg, fg=fg, font=fnt, justify=tk.LEFT).pack(anchor='center', pady=30, ipadx=10)
     Button(info, text='OK', bg=bg, fg=fg, font=fnt, command=exit_mb).pack(anchor='se', side='bottom', expand=True, ipadx=10, ipady=5)
-    if last_obj_id == '':
-        last_obj_id = obj_id
     if ret_win:
         return info
 
@@ -703,7 +711,6 @@ def theme(file2, ret=False):
     font_theme = theme_[2]
     default_fg = theme_[1]
     default_bg = theme_[0]
-    print(f'p[msgr _______________________________________________________ IMPORENTANT FONT INFO OFOOFOF ____> ---> {theme_} {font_theme}')
     user_local_settings['USER_SETTINGS']['THEME'] = file2.replace('.theme', '')
     settings_cl = Settings()
     if not loading:
@@ -815,21 +822,42 @@ def send_message(event=None, is_private=False, **kw):
     except OSError:
         showerror('Error', 'SOCK_DISCONNECTED')
         to_send['text'] += ' (!) SOCK_DISCONNECTED'
+    if is_private:
+        read[kw['private_addr']] = chat_lib.private_msgs()[kw['private_addr']]
+    else:
+        read['General'] = chat_lib.msgs()
     send_entry.delete("0", tk.END)
 
 
 def load_chat(event):
     global chat_select_menu, chat_selected
+    if event.widget.curselection() == ():
+        print('chat load ============================================================================ error ::: empty event.widget...')
+        return
+    if event.widget.get(event.widget.curselection()[0]) in ['Online:', username, '']:
+        print('chat load ============================================================================ error ::: event.widget... is Online: or user or empty')
+        return
     chat_select_menu = False
-    chat_selected = orig_chat_list[event.widget.curselection()[0]]
+    print(event.widget.get("0", tk.END))
+    if event.widget.get(event.widget.curselection()[0]) not in orig_chat_list:
+        print(f'new chat {event.widget.get(event.widget.curselection()[0])}')
+        unread[event.widget.get(event.widget.curselection()[0])] = 0
+        read[event.widget.get(event.widget.curselection()[0])] = []
+        orig_chat_list.append(event.widget.get(event.widget.curselection()[0]))
+        chat_lib.new_chat(chat_selected)
+        print(chat_lib.private_msgs().keys())
+    try:
+        chat_selected = orig_chat_list[event.widget.curselection()[0]]
+    except IndexError:
+        print('chat load ============================================================================ error ::: indexerr, threads conflict')
+        main.after(10, load_chat, event)
     if chat_selected == 'General':
-        if 'General' in unread:
-            unread['General'] = 0
-        event.widget.destroy()
-        reinit_window(True)
+        read['General'] = chat_lib.msgs()
     else:
-        event.widget.destroy()
-        reinit_window(True)
+        read[chat_selected] = chat_lib.private_msgs()[chat_selected].copy()
+    unread[chat_selected] = 0
+    reinit_window(True)
+
 
 
 def back_to_chat_select():
@@ -844,7 +872,7 @@ def back_to_chat_select():
 
 
 def reinit_ui(no_reinit_theme=False):
-    global default_fg, default_bg, send_entry, chat_window, online_listbox, send_button, send_private_button
+    global default_fg, default_bg, send_entry, chat_window, online_listbox, send_button, send_private_button, reinit_count
     try:
         if bt_server_data[1] == 'blocked':
             chat_window.place_forget()
@@ -864,6 +892,7 @@ def reinit_ui(no_reinit_theme=False):
     var = tk.Variable(main, value=chat_lib.online_list)
     online_listbox = tk.Listbox(height=18, width=17, bg=default_bg, fg=default_fg, font=font_theme,
                           listvariable=var)
+    online_listbox.bind("<<ListboxSelect>>", load_chat)
     online_listbox.place(x=777, y=35)
 
     main.configure(bg=default_bg)
@@ -872,45 +901,58 @@ def reinit_ui(no_reinit_theme=False):
         main.his.pop('chat_select')
     chat_select_listbox = main.create('chat_select', tk.Listbox, width=110, height=30, bg=default_bg, fg=default_fg).tk
     if chat_select_menu:
-        pprint(['[info] ===================== LOADING CHAT SELECT'])
-        chat_select_listbox.insert(tk.END, 'General')
-        for chat_name in chat_lib.private_msgs.keys():
-            chat_select_listbox.insert(tk.END, chat_name)
-            if chat_name not in orig_chat_list:
-                orig_chat_list.append(chat_name)
+        pprint('[info] ===================== LOADING CHAT SELECT')
+        if 'General' in unread:
+            if unread['General'] > 0:
+                chat_select_listbox.insert(tk.END, f'General ({unread["General"]})')
+            else:
+                chat_select_listbox.insert(tk.END, f'General')
+        else:
+            chat_select_listbox.insert(tk.END, f'General')
+        for chat_name in chat_lib.private_msgs().keys():
+            if chat_name != '':
+                res = chat_name
+                if chat_name not in orig_chat_list:
+                    orig_chat_list.append(chat_name)
+                if chat_name in unread:
+                    if unread[chat_name] > 0:
+                        res += f' ({unread[chat_name]})'
+                chat_select_listbox.insert(tk.END, res)
         chat_select_listbox.place(x=0, y=0)
         chat_select_listbox.bind('<<ListboxSelect>>', load_chat)
     elif chat_selected == 'General':
-        pprint(['[info] ===================== LOADING GENERAL'])
+        pprint('[info] ===================== LOADING GENERAL')
         chat_select_listbox.place_forget()
         main.create('back_to_chat_select', Button, True, bg=default_bg, fg=default_fg, font=font_theme, text=locale['back'], command=back_to_chat_select).build('place', x=0, y=0)
         main.create('chat_label', Label, True, bg=default_bg, fg=default_fg, font=font_theme, text=locale['chat_txt'] + ': ' + chat_selected).build('place', x=80, y=0)
-        send_entry = Entry(width=110, bg=default_bg, fg=default_fg, font=font_theme, textvariable=my_message)
+        send_entry = main.create('send_entry', Entry, True, width=110, bg=default_bg, fg=default_fg, font=font_theme, textvariable=my_message).tk
         send_entry.bind("<Return>", send_message)
         send_entry.place(x=0, y=400)
         send_button = Button(text=locale['send_button'], bg=default_bg, fg=default_fg, font=font_theme, command=send_message)
         send_button.place(x=800, y=400)
-        send_private_button = Button(text='Send Private', bg=default_bg, fg=default_fg, font=font_theme,
-                                     command=send_private)
+        send_private_button = main.create('send_private_button', Button, True, text='Send Private', bg=default_bg, fg=default_fg, font=font_theme, command=send_private).tk
         send_private_button.place(x=800, y=350)
+        chat_window.bind('<MouseWheel>', scroll)
         chat_window.place(x=0, y=30)
     elif chat_selected != 'General':
-        pprint([f'[info] ===================== LOADING PRIVATE {chat_selected}'])
+        pprint(f'[info] ===================== LOADING PRIVATE {chat_selected}')
         chat_window.place_forget()
         online_listbox.place_forget()
-        def send_reply():
-            send_message(None, True, private_addr=chat_selected)
+        def send_reply(event=None):
+            send_message(event, True, private_addr=chat_selected)
 
         main.create('back_to_chat_select', Button, bg=default_bg, fg=default_fg, font=font_theme, text=locale['back'],
                     command=back_to_chat_select).build('place', x=0, y=0)
         main.create('chat_label', Label, bg=default_bg, fg=default_fg, font=font_theme,
                     text=locale['chat_txt'] + ': ' + chat_selected).build('place', x=80, y=0)
-        send_entry = Entry(width=110, bg=default_bg, fg=default_fg, font=font_theme, textvariable=my_message)
+        send_entry = main.create('send_entry', Entry, True, width=110, bg=default_bg, fg=default_fg, font=font_theme, textvariable=my_message)
+        send_entry.bind('<Return>', send_reply)
         send_entry.place(x=0, y=400)
-        send_button = Button(text=locale['send_reply_button'], bg=default_bg, fg=default_fg, font=font_theme,
+        send_button = main.create('send_reply_button', Button, True, text=locale['send_reply_button'], bg=default_bg, fg=default_fg, font=font_theme,
                              command=send_reply)
         send_button.place(x=800, y=400)
         chat_window_private = main.create('chat_window_private', Text, True, fg=default_fg, bg=default_bg, font=font_theme, width=110).tk
+        chat_window_private.bind('<MouseWheel>', scroll)
         chat_window_private.place(x=0, y=30)
 
     if not no_reinit_theme:
@@ -926,15 +968,16 @@ def reinit_ui(no_reinit_theme=False):
             default_fg = 'white'
         else:
             theme(user_local_settings['USER_SETTINGS']['THEME'])
+    reinit_count += 1
 
 
-def read_all():
+def read_loaded():
     unread['General'] = 0
-    read_msgs['General'] = chat_lib.loaded_msgs
+    read['General'] = chat_lib.loaded_msgs.copy()
 
-    for chat_name in chat_lib.loaded_private_msgs:
+    for chat_name in chat_lib.loaded_private_msgs.copy():
         unread[chat_name] = 0
-        read_msgs[chat_name] = chat_lib.loaded_private_msgs[chat_name]
+        read[chat_name] = chat_lib.loaded_private_msgs.copy()[chat_name]
 
 
 def prog_credits():
@@ -984,11 +1027,14 @@ def complete_recv():
     try:
         while not stop_event.is_set():
             try:
-                chat_lib.cl.send({'action_for_chat_server': 'OnlineList'})
-                main.after(0, chat_win_ref, chat_lib.msgs)
-                main.after(0, update_online_list, chat_lib.online_list)
-                if chat_selected not in ['General', '']:
-                    main.after(0, chat_win_private_ref, chat_lib.private_msgs[chat_selected])
+                try:
+                    chat_lib.cl.send({'action_for_chat_server': 'OnlineList'})
+                    main.after(0, chat_win_ref, chat_lib.msgs())
+                    main.after(0, update_online_list, chat_lib.online_list)
+                    if chat_selected not in ['General', '']:
+                        main.after(0, chat_win_private_ref, chat_lib.private_msgs()[chat_selected])
+                except RuntimeError:
+                    pass
             except Exception as _ex:
                 pprint(f'[complete_recv_thread] exception : {type(_ex)} {_ex} \n{traceback.format_exc()}')
                 return
@@ -1014,7 +1060,14 @@ def update_online_list(online_list):
 def chat_win_ref(to):
     if chat_selected == 'General':
         chat_window.delete("0.0", tk.END)
-        for msg in '\n'.join(to):
+        scr = len(to) - 24 - scrolled
+        scr_to = len(to) - scrolled
+        if scr < 0:
+            scr = 0
+        if scr_to < 25:
+            scr_to = 24
+        _to = to[scr:scr_to]
+        for msg in '\n'.join(_to):
             if 'PRIVATE: ' not in msg:
                 chat_window.insert(tk.END, msg)
 
@@ -1022,8 +1075,15 @@ def chat_win_ref(to):
 def chat_win_private_ref(to):
         try:
             main.his['chat_window_private'].tk.delete("0.0", tk.END)
-            main.his['chat_window_private'].tk.insert("0.0", '\n'.join(to))
-        except (KeyError, TclError):
+            scr = len(to) - 24 - scrolled
+            scr_to = len(to) - scrolled
+            if scr < 0:
+                scr = 0
+            if scr_to < 25:
+                scr_to = 24
+            _to = to[scr:scr_to]
+            main.his['chat_window_private'].tk.insert(tk.END, '\n'.join(_to))
+        except (KeyError, tk.TclError):
             pass
 
 
@@ -1085,16 +1145,53 @@ def change_username(a):
     user_local_settings['USER_SETTINGS']['USERNAME'] = a
 
 
-
 def update_chat_list(this):
     main.his['chat_select'].tk.delete("0", tk.END)
     main.his['chat_select'].tk.insert(tk.END, f'General ({this})')
-    for chat_name in chat_lib.private_msgs.keys():
+    for chat_name in chat_lib.private_msgs().keys():
         main.his['chat_select'].tk.insert(tk.END, chat_name + f' ({unread[chat_name]})')
 
 
+def count_unread():
+    for _i in chat_lib.private_msgs().keys():
+        if _i not in orig_chat_list:
+            orig_chat_list.append(_i)
+    for _i in orig_chat_list:
+        if _i != chat_selected:
+            if _i == 'General':
+                unread['General'] = len(chat_lib.msgs()) - len(read['General'])
+            else:
+                if _i not in read:
+                    read[_i] = []
+                unread[_i] = len(chat_lib.private_msgs()[_i]) - len(read[_i])
+    try:
+        if main.his['chat_select'].tk.winfo_exists():
+            for _key, _value in unread.items():
+                if _value != 0:
+                    item = (orig_chat_list
+                            .index(_key))
+                    main.his['chat_select'].tk.delete(item, item)
+                    main.his['chat_select'].tk.insert(item, _key + ' (' + str(_value) + ')')
+        main.after(500, count_unread)
+    except KeyError:
+        pass
+
+
+def scroll(event):
+    global scrolled
+    if scrolled >= 0:
+        pre_scr = scrolled + event.delta // 120
+        if pre_scr >= 0:
+            scrolled = pre_scr
+    else:
+        scrolled = 0
+    if chat_selected not in ['General', '']:
+        chat_win_private_ref(chat_lib.private_msgs()[chat_selected])
+    else:
+        chat_win_ref(chat_lib.msgs())
+
 if 'launcher' in sys.argv[0]:
-    pprint(' MSGR QW BY BEBRA TECH (C) 2023 - 2025')
+    pprint('MSGR QW BY BEBRA TECH (C) 2023 - 2025')
     tick_sys = TickSys()
     threading.Thread(target=tick_sys.start_tick, daemon=True).start()
     default_bg = 'black'
@@ -1103,22 +1200,158 @@ if 'launcher' in sys.argv[0]:
     debug_mode = False
     chat_select_menu = True
     chat_selected = ''
-    unread = {}
-    read_msgs = {}
+    scrolled = 0
+    unread = SpyDict()
+    read = SpyDict()
     orig_chat_list = ['General']
+    reinit_count = 0
     complete_recv_thread = threading.Thread(target=complete_recv, daemon=True)
 
     for i in sys.argv:
         if 'RunBeforeWin' in i:
             exec(repr(i.split('$=%')[1])[1:-1].replace(r' $$N ', '\n'))
 
+    def reinit_wrapper(event):
+        print(f'reinit pinged {event.keysym}')
+        if event.keysym == 'k':
+            reinit_ui()
+
+    def crv():
+        globals().update({'my_message': tk.Variable()})
+        if 'PY_VAR' in str(my_message):
+            main.recovery_widgets.pop(2)
+            main.recovery_widgets.append({'name': 'debugmenu_button2', 'obj': Button,
+                                      'kwargs': {'text': 'load main_menu', 'command': cvr3},
+                                      'place_mode': 'pack', 'place_kw': {'anchor': 'nw'}})
+            main.recovery()
+
+    def crv2():
+        main.quit()
+        main.mainloop()
+
+    def cvr3():
+        main.destroy_all_in()
+        reinit_ui()
+
+    def cvr4():
+        reinit_window()
+        main.recovery()
+
+    def cvr_load_recovery():
+        main.destroy_all_in()
+        main.recovery()
+
+    def complete_install():
+        def mod_mainloop(n=0):
+            if 'READY' not in sys.stdout.read():
+                return
+            else:
+                main.mainloop = orig_ml
+                main.recovery()
+                main.mainloop()
+        main.destroy_all_in()
+        main.quit()
+        orig_ml = main.mainloop
+        main.mainloop = mod_mainloop
+
+    def cvr5():
+        cvr_scrolled = 0
+        def exec_wrapper(event):
+            exec(event.widget.get(), globals(), locals())
+
+        def scroll_wrapper(event):
+            nonlocal cvr_scrolled
+            pseudo_result = cvr_scrolled + event.delta // 120
+            if pseudo_result > 0:
+                if pseudo_result + 24 < len(sys.stdout.read().split('\n')):
+                    cvr_scrolled = pseudo_result
+                    main['cmdline'].tk.delete("0.0", tk.END)
+                    main['cmdline'].tk.insert(tk.END,
+                                              '\n'.join(
+                                                  sys.stdout.read().split('\n')[cvr_scrolled:cvr_scrolled + 24]
+                                                ))
+                    spl = main['dbg'].tk['text'].split('\n')
+                    spl[1] = f'scrolled {cvr_scrolled}:{cvr_scrolled + 24}'
+                    main['dbg'].tk['text'] = '\n'.join(spl)
+
+
+        def cvr_cmdline_loop():
+            cont = True
+            try:
+                main['cmdline'].tk.delete("0.0", tk.END)
+                main['cmdline'].tk.insert(tk.END,
+                                          '\n'.join(
+                                          sys.stdout.read().split('\n')[cvr_scrolled:cvr_scrolled + 24]
+                                          ))
+            except KeyError:
+                cont = False
+            except Exception as _ex:
+                showerror('erq', f'cvr_cmdline_loop wh exec {_ex.__class__} : {_ex}')
+                cont = False
+            if cont:
+                main.after(100, cvr_cmdline_loop)
+
+        def create_var():
+            def commit():
+                globals().update({name.get(): eval(type_v.get())(val.get())})
+                locals().update({name.get(): eval(type_v.get())(val.get())})
+            win = tk.Tk()
+            Label(win, text='')
+            name = Entry(win)
+            name.pack()
+            val = Entry(win)
+            val.pack()
+            type_v = Entry(win)
+            type_v.pack()
+            Button(win, text='create', command=commit).pack()
+
+        main.destroy_all_in()
+        main.create('back_from_cvr5', Button, recreate_if_exists=True, text='Back to recovery', command=cvr_load_recovery).build('place', x=0, y=0)
+        main.create('cmdline', Text, recreate_if_exists=True).build('pack')
+        main.create('dbg', Label, recreate_if_exists=True).build('pack')
+        main.create('exec_line', Entry, recreate_if_exists=True, width=60).build('pack')
+        main.create('create_var', Button, recreate_if_exists=True, text='create variable',
+                    command=create_var).build('place', x=0, y=30)
+        main['exec_line'].tk.bind('<Return>', exec_wrapper)
+        nl = '\n'
+        main['dbg'].tk['text'] = f'scroll limit: top: 0, bottom: {len(sys.stdout.read().split(nl))}\n'
+        main['cmdline'].tk.bind('<MouseWheel>', scroll_wrapper)
+        cvr_cmdline_loop()
+
     main = Win()
+    main.option_add('*Font', font_theme)
+    main.recovery_widgets.append({'name': 'recovery_lbl', 'obj': Label,
+                                  'kwargs': {'text': f'you pressed ctrl+s\nrecovery menu', 'justify': 'left'},
+                                  'place_mode': 'pack', 'place_kw': {'anchor': 'nw'}})
+    main.recovery_widgets.append({'name': 'recovery_butt1', 'obj': Button, 'kwargs': {'text': 'Press here to open debugtools', 'command': Debug().debugtools}, 'place_mode': 'pack', 'place_kw': {'anchor': 'nw'}})
+    main.recovery_widgets.append({'name': 'recovery_butt2', 'obj': Button,
+                                  'kwargs': {'text': 'create my_mesage', 'command': crv},
+                                  'place_mode': 'pack', 'place_kw': {'anchor': 'nw'}})
+    main.recovery_widgets.append({'name': 'recovery_butt3', 'obj': Button,
+                                  'kwargs': {'text': 'reinit window loop', 'command': crv2},
+                                  'place_mode': 'pack', 'place_kw': {'anchor': 'nw'}})
+    main.recovery_widgets.append({'name': 'recovery_butt4', 'obj': Button,
+                                  'kwargs': {'text': 'reinit window', 'command': cvr4},
+                                  'place_mode': 'pack', 'place_kw': {'anchor': 'nw'}})
+    if '--no-install-script' in sys.argv:
+        main.recovery_widgets.append({'name': 'recovery_butt5', 'obj': Button,
+                                     'kwargs': {'text': 'open execline', 'command': cvr5},
+                                     'place_mode': 'pack', 'place_kw': {'anchor': 'nw'}})
+
+    main.recovery_widgets.append(lambda: main.configure(bg=Button()['bg']))
+    main.recovery_widgets.append(lambda: main.title('Recovery'))
+
+
     main.geometry([900, 500])
     main.resizable(False, False)
-    main.title('MsgrQW - Loading')
+    main.title('MSGR QW - Loading')
     pprint('[info] init window and vars')
 
     main.configure(bg='black')
+
+    if '--no-install-script' in sys.argv:
+        main.protocol('WM_DELETE_WINDOW', exit)
+        main.mainloop()
 
     load_lbl = main.create('load_lbl', Label, text='Loading...', bg='black', fg='white',
                      font=('Consolas', 9), justify=tk.LEFT)
@@ -1461,13 +1694,9 @@ if 'launcher' in sys.argv[0]:
             exec(i.split('$=%')[1])
     if bt_server_data[1] != 'blocked':
         chat_window = Text(fg=default_fg, bg=default_bg, font=font_theme, width=110)
+        chat_window.bind('<MouseWheel>', scroll)
         chat_window.place(x=0, y=0)
     if not run_f_setup and work and bt_server_data[1] != 'blocked':
-        t = {'action_for_chat_server': 'MyUSER', 'username': username}
-        try:
-            chat.send(f'{t}')
-        except OSError:
-            pass
         try:
             if '_show_ip' not in bt_server_data[1]['answer']:
                 auth.update_personal_conf(username, ['_show_ip', 'False'])
@@ -1483,35 +1712,38 @@ if 'launcher' in sys.argv[0]:
     refresh()
     reinit_window()
     reinit_ui()
+    read_loaded()
+    main.bind('<Key>', reinit_wrapper)
     pprint('[info] main thread started')
     if work:
         pprint('[info] work - true')
+        threading.Thread(target=chat.async_recv, daemon=True).start()
         try:
-            threading.Thread(target=chat.async_recv, daemon=True).start()
-            try:
-                pprint('[info] starting crt')
-                complete_recv_thread.start()
-                pprint('[info] started')
-            except RuntimeError:
-                pprint('[error] crt_start ex Runt')
-                pass
-            loading = False
-            reinit_ui()
-            read_all()
-            pprint('[info] READY')
-            try:
-                main.mainloop()
-            except KeyboardInterrupt:
-                exit()
-        except Exception as main_thread_ex:
-            pprint(main_thread_ex)
-            pprint(traceback.format_exc())
-            main.quit()
-            main.destroy()
+            pprint('[info] starting crt')
+            complete_recv_thread.start()
+            pprint('[info] started')
+        except RuntimeError:
+            pprint('[error] crt_start ex Runt')
+            pass
+        loading = False
+        reinit_ui()
+        t = {'action_for_chat_server': 'MyUSER', 'username': username}
+        try:
+            chat.send(f'{t}')
+        except OSError:
+            pass
+        count_unread()
+        pprint('[info] READY')
+        pprint(f'[info] successful start with reinit_ui_counter = {reinit_count}')
+        try:
+            main.mainloop()
+        except KeyboardInterrupt:
+            pass
+    pprint(f'[info] exited with reinit_ui_counter = {reinit_count}')
     pprint('[info] stopping program')
     work = False
     tick_sys.stop = True
-    os.system('rmdir __pycache__ /s /q')
+    shutil.rmtree('./__pycache__')
 
     pprint('[info] shutdown all threads')
     stop_event.set()

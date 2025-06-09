@@ -1,3 +1,5 @@
+# downloaded from msgr-patches for 3.8!
+
 import math
 import os.path
 import sys
@@ -5,6 +7,8 @@ from tkinter import TclError
 import tkinter
 from typing import Literal, Union
 import data.ru_to_en
+from data import utils
+
 
 class LogMeta(type):
     def __new__(cls, name, bases, dct):
@@ -71,7 +75,7 @@ class Widget(AdvLog):
         self.destroyed = False
 
     def build(self, mode: Literal['place', 'grid', 'pack'], **kwargs):
-        print_adv(f'[{self._name}] builded {mode}')
+        print_adv(f'[{self._name}] build {mode} {kwargs} {self.tk.__dict__}')
         if mode == 'place':
             self.tk.place(**kwargs)
         elif mode == 'grid':
@@ -144,7 +148,6 @@ class Button(tkinter.Button):
     def __init__(self, master=None, command="", **kwargs):
         if command != "":
             command = self._wrap_command(command)
-
         # Явный вызов конструктора родителя с правильными аргументами
         super().__init__(
             master=master,
@@ -179,8 +182,8 @@ class Text(tkinter.Text):
 class Entry(tkinter.Entry):
     def __init__(self, master=None, **kwargs):
         super().__init__(
-            master=master,
-            **kwargs)
+           master=master,
+           **kwargs)
 
 
 
@@ -192,8 +195,20 @@ class Win(tkinter.Tk):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.his = {}
+        self._registered_widgets = []
         self.his_being = {}
         self.widgets_name = []
+        self.recovery_widgets = []
+        self.bind('<Control-s>', self.recovery)
+
+    def recovery(self, event=None):
+        self.destroy_all_in()
+        for i in self.recovery_widgets:
+            if callable(i):
+                i()
+            else:
+                self.create(i['name'], i['obj'], recreate_if_exists=True, **i['kwargs']).build(i['place_mode'], **i['place_kw'])
+
 
     def geometry(self, size=None, pos=None):
         if size is None:
@@ -215,8 +230,11 @@ class Win(tkinter.Tk):
             else:
                 self.his[name].destroy()
                 self.his.pop(name)
-        self.his[name] = Widget(self, obj(**kwargs), name=name)
-        self.his_being.update({name: Widget(self, obj(**kwargs), name=name)})
+        print(f'[win {self.title()}][{name}] {kwargs} {obj}')
+        create_kw = kwargs
+        self.his[name] = Widget(self, obj(**create_kw), name=name)
+        self._registered_widgets.append(self.his[name].tk)
+        self.his_being.update({name: self.his[name]})
         self.widgets_name.append(name)
         return self.his[name]
 
@@ -240,6 +258,12 @@ class Win(tkinter.Tk):
         self.his = {}
         # Принудительно обновляем окно
         self.update()
+
+    def update(self):
+        super().update()
+
+    def __getitem__(self, item):
+        return self.his[item]
 
 
 class SidePanelWidget:

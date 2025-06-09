@@ -1,0 +1,254 @@
+[STDOUT] ~ LOG STARTED ~
+[STDOUT][loader][info] launcher&exception hook v.0
+[STDOUT][loader][info] win release 11
+[STDOUT] - ~ * PROGRAM * ~ - 
+[STDOUT][msgr.py]MSGR QW BY BEBRA TECH (C) 2023 - 2025
+[STDOUT][msgr.py][info] init window and vars
+[STDOUT][btaeui.py][win MSGR QW - Loading] destroying all widgets
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget recovery_lbl
+[STDOUT][win MSGR QW - Loading][recovery_lbl] {'text': 'you pressed ctrl+s\nrecovery menu', 'justify': 'left'} <class 'data.btaeui.Label'>
+[STDOUT][btaeui.py][advlog][recovery_lbl] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][recovery_lbl] build pack {'anchor': 'nw'} {'widgetName': 'label', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!label', '_w': '.!label', 'children': {}, '_tclCommands': []}
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget recovery_butt1
+[STDOUT][win MSGR QW - Loading][recovery_butt1] {'text': 'Press here to open debugtools', 'command': <bound method Debug.debugtools of <msgr.Debug object at 0x0000057EEC577690>>} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][recovery_butt1] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][recovery_butt1] build pack {'anchor': 'nw'} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button', '_w': '.!button', 'children': {}, '_tclCommands': ['6042710525312safe_command']}
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget recovery_butt2
+[STDOUT][win MSGR QW - Loading][recovery_butt2] {'text': 'create my_mesage', 'command': <function crv at 0x0000057EED021EA0>} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][recovery_butt2] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][recovery_butt2] build pack {'anchor': 'nw'} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button2', '_w': '.!button2', 'children': {}, '_tclCommands': ['6042710526784safe_command']}
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget recovery_butt3
+[STDOUT][win MSGR QW - Loading][recovery_butt3] {'text': 'reinit window loop', 'command': <function crv2 at 0x0000057EED021F40>} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][recovery_butt3] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][recovery_butt3] build pack {'anchor': 'nw'} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button3', '_w': '.!button3', 'children': {}, '_tclCommands': ['6042710526016safe_command']}
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget recovery_butt4
+[STDOUT][win MSGR QW - Loading][recovery_butt4] {'text': 'reinit window', 'command': <function cvr4 at 0x0000057EED022080>} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][recovery_butt4] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][recovery_butt4] build pack {'anchor': 'nw'} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button4', '_w': '.!button4', 'children': {}, '_tclCommands': ['6042710525888safe_command']}
+[STDOUT][btaeui.py][win MSGR QW - Loading] creating widget recovery_butt5
+[STDOUT][win MSGR QW - Loading][recovery_butt5] {'text': 'open execline', 'command': <function cvr5 at 0x0000057EED022260>} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][recovery_butt5] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][recovery_butt5] build pack {'anchor': 'nw'} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button5', '_w': '.!button5', 'children': {}, '_tclCommands': ['6042710524544safe_command']}
+[STDOUT][btaeui.py][win Recovery] destroying all widgets
+[STDOUT][btaeui.py][win Recovery] Destroying: recovery_lbl
+[STDOUT][btaeui.py][advlog][recovery_lbl] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][recovery_lbl] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][recovery_lbl] recovery_lbl destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: recovery_butt1
+[STDOUT][btaeui.py][advlog][recovery_butt1] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][recovery_butt1] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][recovery_butt1] recovery_butt1 destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: recovery_butt2
+[STDOUT][btaeui.py][advlog][recovery_butt2] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][recovery_butt2] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][recovery_butt2] recovery_butt2 destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: recovery_butt3
+[STDOUT][btaeui.py][advlog][recovery_butt3] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][recovery_butt3] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][recovery_butt3] recovery_butt3 destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: recovery_butt4
+[STDOUT][btaeui.py][advlog][recovery_butt4] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][recovery_butt4] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][recovery_butt4] recovery_butt4 destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: recovery_butt5
+[STDOUT][btaeui.py][advlog][recovery_butt5] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][recovery_butt5] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][recovery_butt5] recovery_butt5 destroyed
+[STDOUT][btaeui.py][win Recovery] creating widget back_from_cvr5
+[STDOUT][win Recovery][back_from_cvr5] {'text': 'Back to recovery', 'command': <function cvr_load_recovery at 0x0000057EED022120>} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][back_from_cvr5] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][back_from_cvr5] build place {'x': 0, 'y': 0} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button7', '_w': '.!button7', 'children': {}, '_tclCommands': ['6042710526336safe_command']}
+[STDOUT][btaeui.py][win Recovery] creating widget cmdline
+[STDOUT][win Recovery][cmdline] {} <class 'data.btaeui.Text'>
+[STDOUT][btaeui.py][advlog][cmdline] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][cmdline] build pack {} {'widgetName': 'text', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!text', '_w': '.!text', 'children': {}, '_tclCommands': []}
+[STDOUT][btaeui.py][win Recovery] creating widget dbg
+[STDOUT][win Recovery][dbg] {} <class 'data.btaeui.Label'>
+[STDOUT][btaeui.py][advlog][dbg] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][dbg] build pack {} {'widgetName': 'label', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!label2', '_w': '.!label2', 'children': {}, '_tclCommands': []}
+[STDOUT][btaeui.py][win Recovery] creating widget exec_line
+[STDOUT][win Recovery][exec_line] {'width': 60} <class 'data.btaeui.Entry'>
+[STDOUT][btaeui.py][advlog][exec_line] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][exec_line] build pack {} {'widgetName': 'entry', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!entry', '_w': '.!entry', 'children': {}, '_tclCommands': []}
+[STDOUT][btaeui.py][win Recovery] creating widget create_var
+[STDOUT][win Recovery][create_var] {'text': 'create variable', 'command': <function cvr5.<locals>.create_var at 0x0000057EED022EE0>} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][create_var] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][create_var] build place {'x': 0, 'y': 30} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button8', '_w': '.!button8', 'children': {}, '_tclCommands': ['6042710528192safe_command']}
+[STDOUT][btaeui.py][win Recovery] destroying all widgets
+[STDOUT][btaeui.py][win Recovery] Destroying: back_from_cvr5
+[STDOUT][btaeui.py][advlog][back_from_cvr5] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][back_from_cvr5] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][back_from_cvr5] back_from_cvr5 destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: cmdline
+[STDOUT][btaeui.py][advlog][cmdline] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][cmdline] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][cmdline] cmdline destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: dbg
+[STDOUT][btaeui.py][advlog][dbg] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][dbg] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][dbg] dbg destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: exec_line
+[STDOUT][btaeui.py][advlog][exec_line] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][exec_line] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][exec_line] exec_line destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: create_var
+[STDOUT][btaeui.py][advlog][create_var] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][create_var] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][create_var] create_var destroyed
+[STDOUT][btaeui.py][win Recovery] creating widget load_lbl
+[STDOUT][win Recovery][load_lbl] {'text': 'Loading...', 'bg': 'black', 'fg': 'white', 'font': ('Consolas', 9), 'justify': 'left'} <class 'data.btaeui.Label'>
+[STDOUT][btaeui.py][advlog][load_lbl] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][load_lbl] build place {'x': 0, 'y': 0} {'widgetName': 'label', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!label3', '_w': '.!label3', 'children': {}, '_tclCommands': []}
+[STDOUT][btaeui.py][win Recovery] creating widget loading_pb
+[STDOUT][win Recovery][loading_pb] {'len_to_count': 11, 'bg': 'black', 'fg': 'white', 'font': ('Consolas', 9)} <class 'data.btaeui.ProgressBar'>
+[STDOUT][btaeui.py][advlog][loading_pb] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][loading_pb] build place {'x': 450, 'y': 490, 'anchor': 'center'} {'widgetName': 'label', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!progressbar', '_w': '.!progressbar', 'children': {}, '_tclCommands': [], 'percentage': 0, '_ltc': 11, '_progress': '....................................................................................................'}
+[STDOUT][msgr.py][info] created loading screen
+[STDOUT][btaeui.py][win Recovery] creating widget exit_button
+[STDOUT][win Recovery][exit_button] {'text': 'Exit', 'bg': 'black', 'fg': 'white', 'font': ('Consolas', 9), 'command': <built-in function exit>} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][exit_button] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][exit_button] build place {'x': 850, 'y': 450} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button9', '_w': '.!button9', 'children': {}, '_tclCommands': ['6042710528192safe_command']}
+[STDOUT][btaeui.py][win Recovery] creating widget action_load
+[STDOUT][win Recovery][action_load] {'text': 'No action', 'bg': 'black', 'fg': 'white', 'font': ('Consolas', 9)} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][action_load] build place {'x': 10, 'y': 450} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button10', '_w': '.!button10', 'children': {}, '_tclCommands': []}
+[STDOUT][msgr.py][info] created loading_screen buttons
+[STDOUT][msgr.py][info] inited vars and ui-elements
+[STDOUT][msgr.py][info] loading data.nc
+[STDOUT][msgr.py][info] loaded
+[STDOUT][msgr.py][info] setting SCREEN_SETTINGS
+[STDOUT][msgr.py][info] loading locale
+[STDOUT][msgr.py][info] locale_fl locale/ru/locale.cfg
+[STDOUT][msgr.py][info] language ru
+[STDOUT][msgr.py][info] init theme
+[STDOUT][msgr.py][info] loading theme hh
+[STDOUT][side ?????????] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
+[STDOUT][btaeui.py][side ?????????] p recreating loaded
+[STDOUT][btaeui.py][advlog][load_lbl] IS DESTROY : False CALLED configure
+[STDOUT][btaeui.py][advlog][exit_button] IS DESTROY : False CALLED configure
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED configure
+[STDOUT][msgr.py][info] setup theme for loading screen
+[STDOUT][msgr.py][info] init data.nc variables
+[STDOUT][msgr.py][info] upa completed
+[STDOUT][msgr.py][info] servers selected
+[STDOUT][msgr.py][info] login completed
+[STDOUT][msgr.py][info] connecting to servers
+[STDOUT][msgr.py][info] connecting to account server
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED configure
+[STDOUT][msgr.py][error] Not connected to BebraTech Authentication Server: Server on 127.0.0.1:1212 not found. program loading stopped
+[STDOUT][msgr.py][info] connecting to chat server
+[STDOUT][msgr.py]<class 'ConnectionRefusedError'>
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED configure
+[STDOUT][msgr.py][info] BTAEML LOADED
+[STDOUT][core.py][plug_api][info] compiling plugins
+[STDOUT][core.py][plug_api][info] compiled plugin backup
+[STDOUT][core.py][plug_api][info] compiled plugin btac
+[STDOUT][core.py][plug_api][info] compiled plugin bypass_server_connect
+[STDOUT][core.py][plug_api][info] compiled plugin core
+[STDOUT][core.py][plug_api][info] pre-loading plugins
+[STDOUT][core.py][plug_api][info] backup pre-loaded
+[STDOUT][core.py][plug_api][info] btac pre-loaded
+[STDOUT][core.py][plug_api][info] bypass_server pre-loaded
+[STDOUT][core.py][plug_api][info] core pre-loaded
+[STDOUT][core.py][plug_api][info] completed
+[STDOUT][msgr.py][info] loading plugins
+[STDOUT][core.py][plug_api][info] auto loading mod backup
+[STDOUT][core.py][plug_api][info] completed in 1sec
+[STDOUT][core.py][plug_api][info] auto loading mod btac
+[STDOUT][core.py][plug_api][info] completed in 1sec
+[STDOUT][core.py][plug_api][info] auto loading mod bypass_server
+[STDOUT][btaeui.py][win Recovery] creating widget bypass_button
+[STDOUT][win Recovery][bypass_button] {'text': '-  ~  *  JAILBREAK BYPASS  *  ~  -', 'command': <bound method Misc.quit of <data.btaeui.Win object .>>, 'font': ('Consolas', 9)} <class 'data.btaeui.Button'>
+[STDOUT][btaeui.py][advlog][bypass_button] IS DESTROY : False CALLED build
+[STDOUT][btaeui.py][bypass_button] build place {'x': 10, 'y': 400} {'widgetName': 'button', 'master': <data.btaeui.Win object .>, 'tk': <_tkinter.tkapp object at 0x0000057EEDA541A0>, '_name': '!button17', '_w': '.!button17', 'children': {}, '_tclCommands': ['6042710537856safe_command']}
+[STDOUT][core.py][plug_api][info] completed in 0sec
+[STDOUT][core.py][plug_api][info] auto loading mod core
+[STDOUT][core.py][plug_api][info] completed in 1sec
+[STDOUT][msgr.py][info] completed
+[STDOUT][msgr.py][info] init theme
+[STDOUT][msgr.py][info] loading theme hh
+[STDOUT][side ?????????] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
+[STDOUT][btaeui.py][side ?????????] p recreating loaded
+[STDOUT][msgr.py][info] finishing
+[STDOUT][btaeui.py][win Recovery] destroying all widgets
+[STDOUT][btaeui.py][win Recovery] Destroying: load_lbl
+[STDOUT][btaeui.py][advlog][load_lbl] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][load_lbl] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][load_lbl] load_lbl destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: loading_pb
+[STDOUT][btaeui.py][advlog][loading_pb] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][loading_pb] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][loading_pb] loading_pb destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: exit_button
+[STDOUT][btaeui.py][advlog][exit_button] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][exit_button] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][exit_button] exit_button destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: action_load
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][action_load] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][action_load] action_load destroyed
+[STDOUT][btaeui.py][win Recovery] Destroying: bypass_button
+[STDOUT][btaeui.py][advlog][bypass_button] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][bypass_button] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][bypass_button] bypass_button destroyed
+[STDOUT][btaeui.py][win ??????????] creating widget chat_select
+[STDOUT][win ??????????][chat_select] {'width': 110, 'height': 30, 'bg': '#909090', 'fg': '#FFFFFF'} <class 'tkinter.Listbox'>
+[STDOUT][msgr.py][info] ===================== LOADING CHAT SELECT
+[STDOUT][msgr.py][info] loading theme hh
+[STDOUT][side ?????????] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
+[STDOUT][btaeui.py][side ?????????] p recreating loaded
+[STDOUT][side ?????????] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
+[STDOUT][btaeui.py][side ?????????] p recreating loaded
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][chat_select] chat_select destroyed
+[STDOUT][btaeui.py][win ??????????] creating widget chat_select
+[STDOUT][win ??????????][chat_select] {'width': 110, 'height': 30, 'bg': '#909090', 'fg': '#FFFFFF'} <class 'tkinter.Listbox'>
+[STDOUT][msgr.py][info] ===================== LOADING CHAT SELECT
+[STDOUT][msgr.py][info] loading theme hh
+[STDOUT][side ?????????] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
+[STDOUT][btaeui.py][side ?????????] p recreating loaded
+[STDOUT][btaeui.py][win ??????????] destroying all widgets
+[STDOUT][btaeui.py][win ??????????] Destroying: chat_select
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][chat_select] chat_select destroyed
+[STDOUT][btaeui.py][win ??????????] creating widget chat_select
+[STDOUT][win ??????????][chat_select] {'width': 110, 'height': 30, 'bg': '#909090', 'fg': '#FFFFFF'} <class 'tkinter.Listbox'>
+[STDOUT][msgr.py][info] ===================== LOADING CHAT SELECT
+[STDOUT][msgr.py][info] loading theme hh
+[STDOUT][side ?????????] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
+[STDOUT][btaeui.py][side ?????????] p recreating loaded
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][chat_select] chat_select destroyed
+[STDOUT][btaeui.py][win ??????????] creating widget chat_select
+[STDOUT][win ??????????][chat_select] {'width': 110, 'height': 30, 'bg': '#909090', 'fg': '#FFFFFF'} <class 'tkinter.Listbox'>
+[STDOUT][msgr.py][info] ===================== LOADING CHAT SELECT
+[STDOUT][msgr.py][info] loading theme hh
+[STDOUT][side ?????????] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
+[STDOUT][btaeui.py][side ?????????] p recreating loaded
+[STDOUT][msgr.py][info] main thread started
+[STDOUT][msgr.py][info] work - true
+[STDOUT][msgr.py][info] starting crt
+[STDOUT][msgr.py][info] started
+[STDOUT][msgr.py][crt] hello
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][chat_select] chat_select destroyed
+[STDOUT][btaeui.py][win ??????????] creating widget chat_select
+[STDOUT][win ??????????][chat_select] {'width': 110, 'height': 30, 'bg': '#909090', 'fg': '#FFFFFF'} <class 'tkinter.Listbox'>
+[STDOUT][msgr.py][info] ===================== LOADING CHAT SELECT
+[STDOUT][msgr.py][info] loading theme hh
+[STDOUT][side ?????????] IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -> font!!! :('Consolas', '9') style ['#909090', '#FFFFFF', 'Consolas:9']
+[STDOUT][btaeui.py][side ?????????] p recreating loaded
+[STDOUT][btaeui.py][win ??????????] destroying all widgets
+[STDOUT][btaeui.py][win ??????????] Destroying: chat_select
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED destroy
+[STDOUT][btaeui.py][advlog][chat_select] IS DESTROY : False CALLED forget
+[STDOUT][btaeui.py][chat_select] chat_select destroyed
+[STDOUT][btaeui.py][win ??????????] creating widget chat_select
+[STDOUT][win ??????????][chat_select] {'width': 110, 'height': 30, 'bg': '#909090', 'fg': '#FFFFFF'} <class 'tkinter.Listbox'>
+[STDOUT][msgr.py][info] ===================== LOADING CHAT SELECT
+[STDOUT][msgr.py][info] READY
+[STDOUT][msgr.py][info] successful start with reinit_ui_counter = 6
