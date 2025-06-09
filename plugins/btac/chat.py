@@ -1,4 +1,4 @@
-# downloaded from msgr-patches for 3.8!
+# downloaded from msgr-patches!
 
 import json
 import socket
@@ -31,7 +31,10 @@ cl = None
 data.utils.glb = globals()
 
 if os.path.exists('./plugins/btac/chatHistory.json'):
-    hist = json.load(open('./plugins/btac/chatHistory.json'))
+    try:
+        hist = json.load(open('./plugins/btac/chatHistory.json'))
+    except json.JSONDecodeError:
+        hist = {'msgs': [], 'private_msgs': {}}
     _msgs = hist['msgs'].copy()
     _private_msgs = SpyDict(DctPlus(hist['private_msgs'].copy()))
     loaded_msgs = hist['msgs'].copy()
