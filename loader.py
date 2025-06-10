@@ -118,7 +118,6 @@ try:
     vers = cnf['CC_VERSIONS'].split('$%')[0]
 except (KeyError, TypeError) as nc_load_ex:
     showerror('Error', f'DATA.NC not loaded. All configuration will be reset. If this is first launch, ignore this error.\nAnyway, restart program')
-    showerror('adv', traceback.format_exc())
     if askyesno('Clear DATA.NC?', 'Clear DATA.NC?'):
         base_conf['CC'] = str(generate_salt())
         json.dump(base_conf, JsonObject(open('./data/base_data.json', 'w')))
@@ -126,7 +125,11 @@ except (KeyError, TypeError) as nc_load_ex:
         with open('./data/DATA.NC', 'w', encoding='windows-1251') as fl:
             d = base_conf['DATA_NC_CLEARED']
             fl.write(encrypt(d, eval(base_conf['CC'])))
-        sys.exit()
+        dat = SNConfig(decrypt(open('./data/DATA.NC', 'r', encoding='windows-1251').read(), eval(base_conf['CC'])))
+        data_ = dat.load()
+        cnf = SConfig(data_['[LOADER_CONFIG]'])
+        versions = cnf['CC_VERSIONS'].split('$%')
+        vers = cnf['CC_VERSIONS'].split('$%')[0]
     else:
         sys.exit()
 except FileNotFoundError:
