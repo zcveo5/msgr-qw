@@ -116,7 +116,10 @@ try:
     cnf = SConfig(data_['[LOADER_CONFIG]'])
     versions = cnf['CC_VERSIONS'].split('$%')
     vers = cnf['CC_VERSIONS'].split('$%')[0]
-except (KeyError, TypeError) as nc_load_ex:
+except (KeyError, TypeError, FileNotFoundError) as nc_load_ex:
+    if isinstance(nc_load_ex, FileNotFoundError):
+        with open('./data/DATA.NC', 'w'):
+            pass
     showerror('Error', f'DATA.NC not loaded. All configuration will be reset. If this is first launch, ignore this error.\nAnyway, restart program')
     if askyesno('Clear DATA.NC?', 'Clear DATA.NC?'):
         base_conf['CC'] = str(generate_salt())
@@ -132,10 +135,6 @@ except (KeyError, TypeError) as nc_load_ex:
         vers = cnf['CC_VERSIONS'].split('$%')[0]
     else:
         sys.exit()
-except FileNotFoundError:
-    with open('./data/DATA.NC', 'w'):
-        pass
-    showerror('Err', 'restart required')
 loader.destroy()
 # check LL_Update in RUNT_ACTION
 if base_conf['RUNT_ACTION'] == 'LL_Update':
